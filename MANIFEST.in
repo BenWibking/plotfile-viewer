@@ -1,0 +1,4 @@
+include README.md
+include requirements.txt
+include openpmd_viewer/notebook_starter/openPMD_notebook
+include openpmd_viewer/notebook_starter/Template_notebook.ipynb
