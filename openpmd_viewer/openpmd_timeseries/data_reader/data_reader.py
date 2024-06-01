@@ -15,22 +15,21 @@ import re
 available_backends = []
 
 try:
-    import openpmd_api as io
-    from . import io_reader
-    available_backends.append('openpmd-api')
+    import amrex.space3d as amr
+    available_backends.append('pyamrex')
 except ImportError:
     pass
 
 try:
-    from . import h5py_reader
-    available_backends.append('h5py')
+    import amrex.space2d as amr
+    available_backends.append('pyamrex')
 except ImportError:
     pass
 
 if len(available_backends) == 0:
-    raise ImportError('No openPMD backend found.\n'
-        'Please install either `h5py` or `openpmd-api`:\n'
-        'e.g. with `pip install h5py` or `pip install openpmd-api`')
+    raise ImportError('No pyAMReX backend found.\n'
+        'Please install `pyAMReX`:\n'
+        'e.g. with `pip install pyamrex`')
 
 class DataReader( object ):
     """
@@ -49,10 +48,8 @@ class DataReader( object ):
         self.backend = backend
 
         # Point to the correct reader module
-        if self.backend == 'h5py':
+        if self.backend == 'pyamrex':
             self.iteration_to_file = {}
-        elif self.backend == 'openpmd-api':
-            pass
         else:
             raise RuntimeError('Unknown backend: %s' % self.backend)
 
@@ -72,51 +69,17 @@ class DataReader( object ):
         an array of integers which correspond to the iteration of each file
         (in sorted order)
         """
-        if self.backend == 'h5py':
+        if self.backend == 'pyamrex':
             iterations, iteration_to_file = \
-                h5py_reader.list_files( path_to_dir )
+                pyamrex_reader.list_files( path_to_dir )
             # Store dictionary of correspondence between iteration and file
             self.iteration_to_file = iteration_to_file
             if len(iterations) == 0:
                 raise RuntimeError(
                     "Found no valid files in directory {0}.\n"
-                    "Please check that this is the path to the openPMD files."
-                    "Valid files must have the extension '.h5' if you "
-                    "use the `h5py` backend. For ADIOS '.bp' and other files, "
-                    "please install the `openpmd-api` package."
+                    "Please check that this is the path to the plot files."
+                    "Valid files must end with 'plt' followed by one or more digits."
                     .format(path_to_dir))
-        elif self.backend == 'openpmd-api':
-            # guess file ending from first file in directory
-            first_file_name = None
-
-            is_single_file = os.path.isfile(path_to_dir)
-            if is_single_file:
-                first_file_name = path_to_dir
-            else:
-                for file_name in os.listdir( path_to_dir ):
-                    if file_name.split(os.extsep)[-1] in io.file_extensions:
-                        first_file_name = file_name
-            if first_file_name is None:
-                raise RuntimeError(
-                    "Found no valid files in directory {0}.\n"
-                    "Please check that this is the path to the openPMD files."
-                    "(valid files must have one of the following extensions: {1})"
-                    .format(path_to_dir, io.file_extensions))
-
-            if is_single_file:
-                file_path = path_to_dir
-                series_name = file_path
-            else:
-                # match last occurance of integers and replace with %T wildcards
-                # examples: data00000100.h5 diag4_00000500.h5 io12.0.bp
-                #           te42st.1234.yolo.json scan7_run14_data123.h5
-                file_path = re.sub(r'(\d+)(\.(?!\d).+$)', r'%T\2', first_file_name)
-                series_name = os.path.join( path_to_dir, file_path)
-
-            self.series = io.Series(
-                series_name,
-                io.Access.read_only )
-            iterations = np.array( self.series.iterations )
 
         return iterations
 
@@ -200,98 +163,6 @@ class DataReader( object ):
             return io_reader.read_field_cartesian(
                 self.series, iteration, field, coord, axis_labels,
                 slice_relative_position, slice_across )
-
-    def read_field_circ( self, iteration, field, coord, slice_relative_position,
-                        slice_across, m=0, theta=0., max_resolution_3d=None ):
-        """
-        Extract a given field from an openPMD file in the openPMD format,
-        when the geometry is thetaMode
-
-        Parameters
-        ----------
-        iteration : int
-           The iteration at which to extract the fields
-
-        field : string, optional
-           Which field to extract
-           Either 'rho', 'E', 'B' or 'J'
-
-        coord : string, optional
-           Which component of the field to extract
-           Either 'r', 't' or 'z'
-
-        m : int or string, optional
-           The azimuthal mode to be extracted
-
-        theta : float or None
-           Angle of the plane of observation with respect to the x axis
-           If `theta` is not None, then this function returns a 2D array
-           corresponding to the plane of observation given by `theta` ;
-           otherwise it returns a full 3D Cartesian array
-
-        slice_across : list of str or None
-           Direction(s) across which the data should be sliced
-           Elements can be 'r' and/or 'z'
-           Returned array is reduced by 1 dimension per slicing.
-
-        slice_relative_position : list of float or None
-           Number(s) between -1 and 1 that indicate where to slice the data,
-           along the directions in `slice_across`
-           -1 : lower edge of the simulation box
-           0 : middle of the simulation box
-           1 : upper edge of the simulation box
-
-        max_resolution_3d : list of int or None
-            Maximum resolution that the 3D reconstruction of the field (when
-            `theta` is None) can have. The list should contain two values,
-            e.g. `[200, 100]`, indicating the maximum longitudinal and
-            transverse resolution, respectively. This is useful for
-            performance reasons, particularly for 3D visualization.
-
-        Returns
-        -------
-        A tuple with
-           F : a 3darray or 2darray containing the required field,
-               depending on whether `theta` is None or not
-           info : a FieldMetaInformation object
-           (contains information about the grid; see the corresponding docstring)
-        """
-        if self.backend == 'h5py':
-            filename = self.iteration_to_file[iteration]
-            return h5py_reader.read_field_circ(
-                filename, iteration, field, coord, slice_relative_position,
-                slice_across, m, theta, max_resolution_3d )
-        elif self.backend == 'openpmd-api':
-            return io_reader.read_field_circ(
-                self.series, iteration, field, coord, slice_relative_position,
-                slice_across, m, theta, max_resolution_3d )
-
-    def read_species_data( self, iteration, species, record_comp, extensions):
-        """
-        Extract a given species' record_comp
-
-        Parameters
-        ----------
-        iteration: int
-            The iteration at which to extract the species data
-
-        species: string
-            The name of the species to extract (in the openPMD file)
-
-        record_comp: string
-            The record component to extract
-            Either 'x', 'y', 'z', 'r', 'ux', 'uy', 'uz', 'ur', or 'w'
-
-        extensions: list of strings
-            The extensions that the current OpenPMDTimeSeries complies with
-        """
-        if self.backend == 'h5py':
-            filename = self.iteration_to_file[iteration]
-            return h5py_reader.read_species_data(
-                    filename, iteration, species, record_comp, extensions )
-        elif self.backend == 'openpmd-api':
-            return io_reader.read_species_data(
-                    self.series, iteration, species, record_comp, extensions )
 
     def get_grid_parameters(self, iteration, avail_fields, metadata ):
         """

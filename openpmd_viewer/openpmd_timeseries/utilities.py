@@ -12,7 +12,6 @@ import copy
 import math
 import numpy as np
 from .numba_wrapper import jit
-from .data_order import RZorder, order_error_msg
 
 def sanitize_slicing(slice_across, slice_relative_position):
     """
@@ -297,57 +296,3 @@ def histogram_cic_2d( q1, q2, w,
 
     return( hist_data )
 
-
-@jit
-def construct_3d_from_circ( F3d, Fcirc, x_array, y_array, modes,
-    nx, ny, nz, nr, nmodes, inv_dr, rmax, coord_order): 
-    """
-    Reconstruct the field from a quasi-cylindrical simulation (`Fcirc`), as
-    a 3D cartesian array (`F3d`).
-    """
-    for ix in range(nx):
-        x = x_array[ix]
-        for iy in range(ny):
-            y = y_array[iy]
-            r = np.sqrt( x**2 + y**2 )
-            ir = nr - 1 - int( (rmax - r) * inv_dr + 0.5 )
-
-            # Handle out-of-bounds
-            if ir < 0:
-                ir = 0
-            if ir >= nr:
-                ir = nr-1
-
-            # Calculate linear projection from ir and ir-1
-            if ir>0:
-                s0 = ir + 0.5 - r* inv_dr
-                s1 = 1. - s0
-                if coord_order is RZorder.mrz:
-                    Fcirc_proj = s1*Fcirc[:, ir, :] + s0*Fcirc[:, ir-1, :]
-                elif coord_order is RZorder.mzr:
-                    Fcirc_proj = s1*Fcirc[:, :, ir] + s0*Fcirc[:, :, ir-1]
-                else:
-                    raise Exception(order_error_msg)
-            else:
-                if coord_order is RZorder.mrz:
-                    Fcirc_proj = Fcirc[:, ir, :]
-                elif coord_order is RZorder.mzr:
-                    Fcirc_proj = Fcirc[:, :, ir]
-                else:
-                    raise Exception(order_error_msg)
-
-            # Loop over all modes and recontruct data
-            if r == 0:
-                expItheta = 1. + 0.j
-            else:
-                expItheta = (x+1.j*y)/r
-
-            for im in range(nmodes):
-                mode = modes[im]
-                if mode==0:
-                    F3d[ix, iy, :] += Fcirc_proj[0, :]
-                else:
-                    cos = (expItheta**mode).real
-                    sin = (expItheta**mode).imag
-                    F3d[ix, iy, :] += Fcirc_proj[2*mode-1,:]*cos + \
-                        Fcirc_proj[2*mode,:]*sin
