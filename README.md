@@ -1,6 +1,6 @@
 # plotfile-viewer
 
-[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/BenWibking/plotfile-viewer/dev?filepath=docs/source/tutorials%2F)
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/BenWibking/plotfile-viewer/main?filepath=docs/source/tutorials%2F)
 
 ## Overview
 
@@ -22,10 +22,10 @@ visualize the data.
 
 The notebooks in the folder `tutorials/` demonstrate how to use both
 the API and the interactive GUI. You can view these notebooks online
-[here](https://github.com/BenWibking/plotfile-viewer/tree/dev/docs/source/tutorials).
+[here](https://github.com/BenWibking/plotfile-viewer/tree/main/docs/source/tutorials).
 
 Alternatively, you can even
-[*run* our tutorials online](https://mybinder.org/v2/gh/BenWibking/plotfile-viewer/dev?filepath=docs/source/tutorials%2F)!
+[*run* our tutorials online](https://mybinder.org/v2/gh/BenWibking/plotfile-viewer/main?filepath=docs/source/tutorials%2F)!
 
 You can also download and run these notebooks on your local computer
 (when viewing the notebooks with the above link, click on `Raw` to be able to
