@@ -16,13 +16,15 @@ available_backends = []
 
 try:
     import amrex.space3d as amr
-    available_backends.append('pyamrex')
+    from . import amrex_reader
+    available_backends.append('amrex')
 except ImportError:
     pass
 
 try:
     import amrex.space2d as amr
-    available_backends.append('pyamrex')
+    from . import amrex_reader
+    available_backends.append('amrex')
 except ImportError:
     pass
 
@@ -48,7 +50,7 @@ class DataReader( object ):
         self.backend = backend
 
         # Point to the correct reader module
-        if self.backend == 'pyamrex':
+        if self.backend == 'amrex':
             self.iteration_to_file = {}
         else:
             raise RuntimeError('Unknown backend: %s' % self.backend)
@@ -69,9 +71,9 @@ class DataReader( object ):
         an array of integers which correspond to the iteration of each file
         (in sorted order)
         """
-        if self.backend == 'pyamrex':
+        if self.backend == 'amrex':
             iterations, iteration_to_file = \
-                pyamrex_reader.list_files( path_to_dir )
+                amrex_reader.list_files( path_to_dir )
             # Store dictionary of correspondence between iteration and file
             self.iteration_to_file = iteration_to_file
             if len(iterations) == 0:
@@ -103,14 +105,10 @@ class DataReader( object ):
         - A dictionary containing several parameters, such as the geometry, etc
          When extract_parameters is False, the second argument returned is None
         """
-        if self.backend == 'h5py':
+        if self.backend == 'amrex':
             filename = self.iteration_to_file[iteration]
-            return h5py_reader.read_openPMD_params(
+            return amrex_reader.read_openPMD_params(
                     filename, iteration, extract_parameters)
-
-        elif self.backend == 'openpmd-api':
-            return io_reader.read_openPMD_params(
-                    self.series, iteration, extract_parameters)
 
     def read_field_cartesian( self, iteration, field, coord, axis_labels,
                           slice_relative_position, slice_across ):
@@ -154,15 +152,12 @@ class DataReader( object ):
            info : a FieldMetaInformation object
            (contains information about the grid; see the corresponding docstring)
         """
-        if self.backend == 'h5py':
+        if self.backend == 'amrex':
             filename = self.iteration_to_file[iteration]
-            return h5py_reader.read_field_cartesian(
+            return amrex_reader.read_field_cartesian(
                 filename, iteration, field, coord, axis_labels,
                 slice_relative_position, slice_across )
-        elif self.backend == 'openpmd-api':
-            return io_reader.read_field_cartesian(
-                self.series, iteration, field, coord, axis_labels,
-                slice_relative_position, slice_across )
+
 
     def get_grid_parameters(self, iteration, avail_fields, metadata ):
         """
@@ -192,10 +187,8 @@ class DataReader( object ):
         The values of `grid_range_dict` are lists of two floats, which
         correspond to the min and max of the grid, along each axis.
         """
-        if self.backend == 'h5py':
+        if self.backend == 'amrex':
             filename = self.iteration_to_file[iteration]
-            return h5py_reader.get_grid_parameters(
+            return amrex_reader.get_grid_parameters(
                 filename, iteration, avail_fields, metadata )
-        elif self.backend == 'openpmd-api':
-            return io_reader.get_grid_parameters(
-                self.series, iteration, avail_fields, metadata )
+ 
