@@ -4,7 +4,7 @@
 
 ## Overview
 
-The intended use case is to view a timeseries of 2D slices
+The proof-of-concept use case is to view a timeseries of 2D slices
 produced by the [DiagFramePlane diagnostic](https://github.com/AMReX-Combustion/PelePhysics/blob/development/Source/Utility/Diagnostics/DiagFramePlane.cpp) output by [PeleLMeX](https://amrex-combustion.github.io/PeleLMeX/manual/html/LMeXControls.html#run-time-diagnostics) and [Quokka](https://quokka-astro.github.io/quokka/insitu_analysis.html#d-slices).
 
 This package contains a set of tools to load and visualize the
