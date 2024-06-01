@@ -1,5 +1,4 @@
 numpy~=1.15
 scipy
-h5py>=2.8.0
 tqdm
 

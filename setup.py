@@ -23,27 +23,27 @@ class PyTest(TestCommand):
         sys.exit(errcode)
 
 # Main setup command
-setup(name='openPMD-viewer',
+setup(name='plotfile-viewer',
       version=__version__,
-      description='Visualization tools for openPMD files',
+      description='Visualization tools for AMReX files',
       long_description=long_description,
       long_description_content_type='text/markdown',
-      url='https://github.com/openPMD/openPMD-viewer.git',
-      maintainer='Remi Lehe',
-      maintainer_email='remi.lehe@lbl.gov',
-      license='BSD-3-Clause-LBNL',
+      url='https://github.com/BenWibking/plotfile-viewer.git',
+      maintainer='Ben Wibking',
+      maintainer_email='ben@wibking.com',
+      license='BSD-3-Clause',
       packages=find_packages('.'),
       package_data={'openpmd_viewer': ['notebook_starter/*.ipynb']},
       scripts=['openpmd_viewer/notebook_starter/openPMD_notebook'],
       tests_require=['pytest', 'jupyter'],
       install_requires=install_requires,
       extras_require = {
-        'all': ["ipympl", "ipywidgets", "matplotlib", "numba", "openpmd-api", "wget"],
+        'all': ["ipympl", "ipywidgets", "matplotlib", "numba", "pyamrex", "wget"],
         'GUI':  ["ipywidgets", "ipympl", "matplotlib"],
         'plot': ["matplotlib"],
         'tutorials': ["ipywidgets", "ipympl", "matplotlib", "wget"],
         'numba': ["numba"],
-        'openpmd-api': ["openpmd-api"]
+        'pyamrex': ["pyamrex"]
         },
       cmdclass={'test': PyTest},
       platforms='any',
