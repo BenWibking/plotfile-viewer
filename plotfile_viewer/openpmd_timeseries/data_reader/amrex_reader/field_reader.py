@@ -1,9 +1,9 @@
 """
-This file is part of the openPMD-viewer.
+This file is part of the plotfile-viewer.
 
 It defines functions that can read the fields from an HDF5 file.
 
-Copyright 2015-2016, openPMD-viewer contributors
+Copyright 2015-2016, plotfile-viewer contributors
 Author: Remi Lehe
 License: 3-Clause-BSD-LBNL
 """
@@ -11,13 +11,13 @@ License: 3-Clause-BSD-LBNL
 import h5py
 import numpy as np
 from .utilities import get_shape, get_data, join_infile_path
-from openpmd_viewer.openpmd_timeseries.field_metainfo import FieldMetaInformation
+from plotfile_viewer.openpmd_timeseries.field_metainfo import FieldMetaInformation
 
 
 def read_field_cartesian( filename, iteration, field, coord, axis_labels,
                           slice_relative_position, slice_across ):
     """
-    Extract a given field from an HDF5 file in the openPMD format,
+    Extract a given field from an HDF5 file in the plotfile format,
     when the geometry is cartesian (1d, 2d or 3d).
 
     Parameters
@@ -142,7 +142,7 @@ def find_dataset( dfile, iteration, field_path ):
        The file from which to extract the dataset
 
     field_path : string
-       The relative path to the requested field, from the openPMD meshes path
+       The relative path to the requested field, from the plotfile meshes path
        (e.g. 'rho', 'E/r', 'B/x')
 
     Returns

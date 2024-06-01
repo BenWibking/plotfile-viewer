@@ -1,10 +1,10 @@
 """
-This file is part of the openPMD-viewer.
+This file is part of the plotfile-viewer.
 
 It defines an interactive interface for the viewer,
 based on the IPython notebook functionalities
 
-Copyright 2015-2016, openPMD-viewer contributors
+Copyright 2015-2016, plotfile-viewer contributors
 Authors: Remi Lehe, Axel Huebl
 License: 3-Clause-BSD-LBNL
 """
@@ -53,7 +53,7 @@ class InteractiveViewer(object):
         """
         # Check that the dependencies have been installed
         if not dependencies_installed:
-            raise RuntimeError("Failed to load the openPMD-viewer slider.\n"
+            raise RuntimeError("Failed to load the plotfile-viewer slider.\n"
                 "(Make sure that ipywidgets and matplotlib are installed.)")
 
         # -----------------------

@@ -1,9 +1,9 @@
 """
-This file is part of the openPMD-viewer.
+This file is part of the plotfile-viewer.
 
-It defines a function that can read standard parameters from an openPMD file.
+It defines a function that can read standard parameters from an plotfile file.
 
-Copyright 2015-2016, openPMD-viewer contributors
+Copyright 2015-2016, plotfile-viewer contributors
 Authors: Remi Lehe, Axel Huebl
 License: 3-Clause-BSD-LBNL
 """
@@ -13,9 +13,9 @@ import numpy as np
 from .utilities import is_scalar_record, get_shape, join_infile_path
 
 
-def read_openPMD_params(filename, iteration, extract_parameters=True):
+def read_plotfile_params(filename, iteration, extract_parameters=True):
     """
-    Extract the time and some openPMD parameters from a file
+    Extract the time and some plotfile parameters from a file
 
     Parameter
     ---------
@@ -38,10 +38,10 @@ def read_openPMD_params(filename, iteration, extract_parameters=True):
     """
     # Open the file, and do a version check
     f = h5py.File(filename, 'r')
-    version = f.attrs['openPMD'].decode()
+    version = f.attrs['plotfile'].decode()
     if version[:2] != '1.':
         raise ValueError(
-            "File %s is not supported: Invalid openPMD version: "
+            "File %s is not supported: Invalid plotfile version: "
             "%s)" % (filename, version))
 
     # Find the base path object, and extract the time
@@ -56,10 +56,10 @@ def read_openPMD_params(filename, iteration, extract_parameters=True):
     # Otherwise, extract the rest of the parameters
     params = {}
 
-    # Find out supported openPMD extensions claimed by this file
+    # Find out supported plotfile extensions claimed by this file
     # note: a file might implement multiple extensions
     known_extensions = {'ED-PIC': np.uint32(1)}
-    bitmask_all_extensions = f.attrs['openPMDextension']
+    bitmask_all_extensions = f.attrs['plotfileextension']
     params['extensions'] = []
     for extension, bitmask in known_extensions.items():
         # This uses a bitmask to identify activated extensions
@@ -72,9 +72,9 @@ def read_openPMD_params(filename, iteration, extract_parameters=True):
 
     # Find out whether fields are present and extract their metadata
     fields_available = False
-    if ('meshesPath' in f.attrs):        # Check for openPMD 1.1 files
+    if ('meshesPath' in f.attrs):        # Check for plotfile 1.1 files
         meshes_path = f.attrs['meshesPath'].decode().strip('/')
-        if meshes_path in bpath.keys():  # Check for openPMD 1.0 files
+        if meshes_path in bpath.keys():  # Check for plotfile 1.0 files
             fields_available = True
     if fields_available:
         params['avail_fields'] = []
@@ -128,9 +128,9 @@ def read_openPMD_params(filename, iteration, extract_parameters=True):
 
     # Find out whether particles are present, and if yes of which species
     particles_available = False
-    if ('particlesPath' in f.attrs):        # Check for openPMD 1.1 files
+    if ('particlesPath' in f.attrs):        # Check for plotfile 1.1 files
         particle_path = f.attrs['particlesPath'].decode().strip('/')
-        if particle_path in bpath.keys():   # Check for openPMD 1.0 files
+        if particle_path in bpath.keys():   # Check for plotfile 1.0 files
             # Check that there is at least one species
             if len(bpath[particle_path].keys()) > 0:
                 particles_available = True
@@ -161,7 +161,7 @@ def read_openPMD_params(filename, iteration, extract_parameters=True):
                     for coord in record.keys():
                         record_components[species_name]. \
                             append(join_infile_path(record_name, coord))
-            # Simplify the name of some standard openPMD records
+            # Simplify the name of some standard plotfile records
             record_components[species_name] = \
                 simplify_record(record_components[species_name])
         params['avail_record_components'] = record_components

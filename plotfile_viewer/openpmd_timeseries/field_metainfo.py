@@ -1,11 +1,11 @@
 """
-This file is part of the openPMD-viewer.
+This file is part of the plotfile-viewer.
 
 It defines the main FieldMetaInformation class, which
 is returned by `get_field` along with the array of field values,
-and gathers information collected from the openPMD file.
+and gathers information collected from the plotfile file.
 
-Copyright 2015-2016, openPMD-viewer contributors
+Copyright 2015-2016, plotfile-viewer contributors
 Author: Remi Lehe
 License: 3-Clause-BSD-LBNL
 """
@@ -71,10 +71,10 @@ class FieldMetaInformation(object):
         Either `t` or `iteration` should be given.
 
     - field_attrs: dict
-        All the attributes of the field record in the openPMD file.
+        All the attributes of the field record in the plotfile file.
 
     - component_attrs: dict
-        All the attributes of the field component record in the openPMD file.
+        All the attributes of the field component record in the plotfile file.
 
     """
 
@@ -84,7 +84,7 @@ class FieldMetaInformation(object):
         """
         Create a FieldMetaInformation object
 
-        The input arguments correspond to their openPMD standard definition
+        The input arguments correspond to their plotfile standard definition
         """
         # Register important initial information
         self.axes = axes

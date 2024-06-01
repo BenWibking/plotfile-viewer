@@ -1,10 +1,10 @@
 """
-This file is part of the openPMD-viewer.
+This file is part of the plotfile-viewer.
 
 It defines a set of methods which are useful for plotting
 (and labeling the plots).
 
-Copyright 2015-2016, openPMD-viewer contributors
+Copyright 2015-2016, plotfile-viewer contributors
 Author: Remi Lehe
 License: 3-Clause-BSD-LBNL
 """
@@ -414,7 +414,7 @@ def check_matplotlib():
     potenial issues with matplotlib are detected."""
 
     if not matplotlib_installed:
-        raise RuntimeError( "Failed to import the openPMD-viewer plotter.\n"
+        raise RuntimeError( "Failed to import the plotfile-viewer plotter.\n"
             "(Make sure that matplotlib is installed.)")
 
     elif ('MacOSX' in matplotlib.get_backend()):

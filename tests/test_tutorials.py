@@ -1,16 +1,16 @@
 """
-This test file is part of the openPMD-viewer.
+This test file is part of the plotfile-viewer.
 
 It makes sure that the tutorial notebooks run without error.
 
 Usage:
-This file is meant to be run from the root directory of openPMD-viewer,
+This file is meant to be run from the root directory of plotfile-viewer,
 by any of the following commands
 $ python tests/test_tutorials.py
 $ py.test
 $ python setup.py test
 
-Copyright 2015-2016, openPMD-viewer contributors
+Copyright 2015-2016, plotfile-viewer contributors
 Authors: Remi Lehe, Axel Huebl
 License: 3-Clause-BSD-LBNL
 """

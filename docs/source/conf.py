@@ -17,13 +17,13 @@
 
 # -- Project information -----------------------------------------------------
 
-import openpmd_viewer
-project = 'openPMD-viewer'
-copyright = '2020, openPMD contributors'
-author = 'openPMD contributors'
+import plotfile_viewer
+project = 'plotfile-viewer'
+copyright = '2020, plotfile contributors'
+author = 'plotfile contributors'
 
 # The full version, including alpha/beta/rc tags
-release = openpmd_viewer.__version__
+release = plotfile_viewer.__version__
 
 
 # -- General configuration ---------------------------------------------------

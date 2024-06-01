@@ -11,4 +11,4 @@ pygments
 scipy
 h5py
 tqdm
-openpmd_viewer
+plotfile_viewer

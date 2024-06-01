@@ -1,9 +1,9 @@
 """
-This file is part of the openPMD-viewer.
+This file is part of the plotfile-viewer.
 
 It defines a wrapper around numba.
 
-Copyright 2019, openPMD-viewer contributors
+Copyright 2019, plotfile-viewer contributors
 Author: Remi Lehe
 License: 3-Clause-BSD-LBNL
 """
@@ -22,7 +22,7 @@ except ImportError:
     def jit(f):
         def decorated_f(*args, **kwargs):
             warnings.warn(
-                '\nOne of the functions called by openPMD-viewer ' +\
+                '\nOne of the functions called by plotfile-viewer ' +\
                 '(%s)\n' %f.__name__ +\
                 'could have been faster if `numba` had been installed.\n' +\
                 'Please consider installing `numba` (e.g. `pip install numba`)')

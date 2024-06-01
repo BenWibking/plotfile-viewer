@@ -1,9 +1,9 @@
 """
-openPMD-viewer
+plotfile-viewer
 
 Usage
 -----
-See the class OpenPMDTimeSeries to open a set of openPMD files
+See the class OpenPMDTimeSeries to open a set of plotfile files
 """
 # Make the OpenPMDTimeSeries object accessible from outside the package
 from .openpmd_timeseries import OpenPMDTimeSeries, FieldMetaInformation

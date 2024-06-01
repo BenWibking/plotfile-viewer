@@ -1,9 +1,9 @@
 """
-This file is part of the openPMD-viewer.
+This file is part of the plotfile-viewer.
 
 It defines a number of helper functions that are used in main.py
 
-Copyright 2015-2017, openPMD-viewer contributors
+Copyright 2015-2017, plotfile-viewer contributors
 Authors: Remi Lehe, Richard Pausch
 License: 3-Clause-BSD-LBNL
 """
@@ -44,10 +44,10 @@ def sanitize_slicing(slice_across, slice_relative_position):
             'The argument `slice_relative_position` is erroneous: \nIt should have'
             'the same number of elements as `slice_across`.')
 
-    # Return a copy. This is because the rest of the `openPMD-viewer` code
+    # Return a copy. This is because the rest of the `plotfile-viewer` code
     # sometimes modifies the objects returned by `sanitize_slicing`.
     # Using a copy avoids directly modifying objects that the user may pass
-    # to this function (and live outside of openPMD-viewer, e.g. directly in
+    # to this function (and live outside of plotfile-viewer, e.g. directly in
     # a user's notebook)
     return copy.copy(slice_across), copy.copy(slice_relative_position)
 

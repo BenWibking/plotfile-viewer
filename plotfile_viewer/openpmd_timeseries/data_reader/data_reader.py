@@ -1,10 +1,10 @@
 """
-This file is part of the openPMD-viewer
+This file is part of the plotfile-viewer
 
 It routes the calls to the data reader to either
 the h5py data reader, or to openpmd-api.
 
-Copyright 2020, openPMD-viewer contributors
+Copyright 2020, plotfile-viewer contributors
 Authors: Remi Lehe
 License: 3-Clause-BSD-LBNL
 """
@@ -28,10 +28,10 @@ if len(available_backends) == 0:
 
 class DataReader( object ):
     """
-    Class that performs various type of access the openPMD file.
+    Class that performs various type of access the plotfile file.
 
     The methods of this class are agnostic of the actual backend package
-    used in order to access the openPMD file (e.g. h5py or openpmd-api).
+    used in order to access the plotfile file (e.g. h5py or openpmd-api).
     The backend that is used in practice depends on which package is
     available on the current environment.
     """
@@ -78,9 +78,9 @@ class DataReader( object ):
 
         return iterations
 
-    def read_openPMD_params(self, iteration, extract_parameters=True):
+    def read_plotfile_params(self, iteration, extract_parameters=True):
         """
-        Extract the time and some openPMD parameters from a file
+        Extract the time and some plotfile parameters from a file
 
         Parameter
         ---------
@@ -100,13 +100,13 @@ class DataReader( object ):
         """
         if self.backend == 'amrex':
             filename = self.iteration_to_file[iteration]
-            return amrex_reader.read_openPMD_params(
+            return amrex_reader.read_plotfile_params(
                     filename, iteration, extract_parameters)
 
     def read_field_cartesian( self, iteration, field, coord, axis_labels,
                           slice_relative_position, slice_across ):
         """
-        Extract a given field from an openPMD file in the openPMD format,
+        Extract a given field from an plotfile file in the plotfile format,
         when the geometry is cartesian (1d, 2d or 3d).
 
         Parameters

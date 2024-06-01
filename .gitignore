@@ -3,7 +3,7 @@
 *.egg
 build/
 dist/
-openpmd_viewer.egg-info/
+plotfile_viewer.egg-info/
 .cache/
 .eggs/
 .vs/

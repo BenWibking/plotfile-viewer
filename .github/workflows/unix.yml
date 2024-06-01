@@ -43,7 +43,7 @@ jobs:
 
     - shell: bash -eo pipefail  -l {0}
       name: pyflakes
-      run: python -m pyflakes openpmd_viewer
+      run: python -m pyflakes plotfile_viewer
     - shell: bash -eo pipefail -l {0}
       name: Test
       run: python setup.py test

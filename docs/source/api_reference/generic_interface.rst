@@ -1,7 +1,7 @@
 Generic interface: ``OpenPMDTimeSeries``
 ----------------------------------------
 
-.. autoclass:: openpmd_viewer.OpenPMDTimeSeries
+.. autoclass:: plotfile_viewer.OpenPMDTimeSeries
 
     .. automethod:: get_field
     .. automethod:: get_particle

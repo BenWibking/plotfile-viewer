@@ -1,9 +1,9 @@
 """
-This file is part of the openPMD-viewer.
+This file is part of the plotfile-viewer.
 
 It defines the main OpenPMDTimeSeries class.
 
-Copyright 2015-2016, openPMD-viewer contributors
+Copyright 2015-2016, plotfile-viewer contributors
 Authors: Remi Lehe, Axel Huebl
 License: 3-Clause-BSD-LBNL
 """
@@ -19,13 +19,13 @@ from .interactive import InteractiveViewer
 
 # Define a custom Exception
 class OpenPMDException(Exception):
-    "Exception raised for invalid use of the openPMD-viewer API"
+    "Exception raised for invalid use of the plotfile-viewer API"
     pass
 
 
 class OpenPMDTimeSeries(InteractiveViewer):
     """
-    Main class for the exploration of an openPMD timeseries
+    Main class for the exploration of an plotfile timeseries
 
     For more details, see the docstring of the following methods:
     - get_field
@@ -35,15 +35,15 @@ class OpenPMDTimeSeries(InteractiveViewer):
 
     def __init__(self, path_to_dir, check_all_files=True, backend=None):
         """
-        Initialize an openPMD time series
+        Initialize an plotfile time series
 
-        More precisely, scan the directory and extract the openPMD files,
-        as well as some useful openPMD parameters
+        More precisely, scan the directory and extract the plotfile files,
+        as well as some useful plotfile parameters
 
         Parameters
         ----------
         path_to_dir: string
-            The path to the directory where the openPMD files are.
+            The path to the directory where the plotfile files are.
 
         check_all_files: bool, optional
             Check that all the files in the timeseries are consistent
@@ -74,7 +74,7 @@ class OpenPMDTimeSeries(InteractiveViewer):
         # Check that there are files in this directory
         if len(self.iterations) == 0:
             print("Error: Found no valid files in the specified directory.\n"
-                  "Please check that this is the path to the openPMD files.")
+                  "Please check that this is the path to the plotfile files.")
             return(None)
 
         # Go through the files of the series, extract the time
@@ -83,7 +83,7 @@ class OpenPMDTimeSeries(InteractiveViewer):
         self.t = np.zeros(N_iterations)
 
         # - Extract parameters from the first file
-        t, params0 = self.data_reader.read_openPMD_params(self.iterations[0])
+        t, params0 = self.data_reader.read_plotfile_params(self.iterations[0])
         self.t[0] = t
         self.extensions = params0['extensions']
         self.avail_fields = params0['avail_fields']
@@ -99,13 +99,13 @@ class OpenPMDTimeSeries(InteractiveViewer):
         # - Extract the time for each file and, if requested, check
         #   that the other files have the same parameters
         for k in range(1, N_iterations):
-            t, params = self.data_reader.read_openPMD_params(
+            t, params = self.data_reader.read_plotfile_params(
                 self.iterations[k], check_all_files)
             self.t[k] = t
             if check_all_files:
                 for key in params0.keys():
                     if params != params0:
-                        print("Warning: File %s has different openPMD "
+                        print("Warning: File %s has different plotfile "
                               "parameters than the rest of the time series."
                               % self.iterations[k])
                         break
@@ -126,7 +126,7 @@ class OpenPMDTimeSeries(InteractiveViewer):
             plot_range=[[None, None], [None, None]],
             use_field_mesh=True, histogram_deposition='cic', **kw):
         """
-        Extract a list of particle variables an openPMD file.
+        Extract a list of particle variables an plotfile file.
 
         Plot the histogram of the returned quantity.
         If two quantities are requested by the user, this plots
@@ -364,7 +364,7 @@ class OpenPMDTimeSeries(InteractiveViewer):
                   slice_relative_position=None, plot=False,
                   plot_range=[[None, None], [None, None]], **kw):
         """
-        Extract a given field from a file in the openPMD format.
+        Extract a given field from a file in the plotfile format.
 
         Parameters
         ----------

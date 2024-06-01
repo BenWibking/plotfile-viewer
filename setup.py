@@ -9,9 +9,9 @@ with open('./README.md') as f:
 with open('./requirements.txt') as f:
     install_requires = [line.strip('\n') for line in f.readlines()]
 
-# Read the version number, by executing the file openpmd_viewer/__version__.py
+# Read the version number, by executing the file plotfile_viewer/__version__.py
 # This defines the variable __version__
-with open('./openpmd_viewer/__version__.py') as f:
+with open('./plotfile_viewer/__version__.py') as f:
     exec( f.read() )
 
 # Define a custom class to run the py.test with `python setup.py test`
@@ -33,8 +33,8 @@ setup(name='plotfile-viewer',
       maintainer_email='ben@wibking.com',
       license='BSD-3-Clause',
       packages=find_packages('.'),
-      package_data={'openpmd_viewer': ['notebook_starter/*.ipynb']},
-      scripts=['openpmd_viewer/notebook_starter/plotfile_notebook'],
+      package_data={'plotfile_viewer': ['notebook_starter/*.ipynb']},
+      scripts=['plotfile_viewer/notebook_starter/plotfile_notebook'],
       tests_require=['pytest', 'jupyter'],
       install_requires=install_requires,
       extras_require = {
