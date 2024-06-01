@@ -53,6 +53,8 @@ browser**. To use this executable, simply type in a regular terminal:
 
 You can also install `plotfile-viewer` using `pip`
 ```
+git clone https://github.com/BenWibking/plotfile-viewer.git
+cd plotfile-viewer
 pip install -e .
 ```
 In addition, if you wish to use the interactive GUI, please type
