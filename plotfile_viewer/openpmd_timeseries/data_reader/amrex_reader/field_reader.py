@@ -68,7 +68,7 @@ def read_field_cartesian( filename, iteration, field, coord, axis_labels,
     grid_spacing = dfile.cellSize(0)
     global_offset = dfile.probLo()
     position = [0, 0]
-    
+
     # Current simulation time
     time = dfile.time()
 
@@ -167,5 +167,7 @@ def get_grid_parameters( filename, iteration, avail_fields, metadata ):
         grid_size_dict[coord] = grid_size[i]
         grid_range_dict[coord] = \
             [ grid_offset[i], grid_offset[i] + grid_size[i] * grid_spacing[i] ]
+
+    print("get_grid_params", grid_size_dict, grid_range_dict)
 
     return grid_size_dict, grid_range_dict

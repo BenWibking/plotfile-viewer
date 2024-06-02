@@ -19,8 +19,13 @@ from .interactive import InteractiveViewer
 
 # Define a custom Exception
 class OpenPMDException(Exception):
-    "Exception raised for invalid use of the plotfile-viewer API"
-    pass
+    def __init__(self, value):
+        self.value = value
+        print("EXCEPTION: ", self.value)
+ 
+    def __str__(self):
+        return(repr(self.value))
+
 
 
 class OpenPMDTimeSeries(InteractiveViewer):
@@ -29,7 +34,6 @@ class OpenPMDTimeSeries(InteractiveViewer):
 
     For more details, see the docstring of the following methods:
     - get_field
-    - get_particle
     - slider
     """
 
@@ -120,244 +124,6 @@ class OpenPMDTimeSeries(InteractiveViewer):
 
         # - Initialize a plotter object, which holds information about the time
         self.plotter = Plotter(self.t, self.iterations)
-
-    def get_particle(self, var_list=None, species=None, t=None, iteration=None,
-            select=None, plot=False, nbins=150,
-            plot_range=[[None, None], [None, None]],
-            use_field_mesh=True, histogram_deposition='cic', **kw):
-        """
-        Extract a list of particle variables an plotfile file.
-
-        Plot the histogram of the returned quantity.
-        If two quantities are requested by the user, this plots
-        a 2d histogram of these quantities.
-
-        In the case of momenta, the result is returned as:
-        - unitless momentum (i.e. gamma*beta) for particles with non-zero mass
-        - in kg.m.s^-1 for particles with zero mass
-
-        Parameters
-        ----------
-        var_list : list of string, optional
-            A list of the particle variables to extract. If var_list is not
-            provided, the available particle quantities are printed
-
-        species: string
-            A string indicating the name of the species
-            This is optional if there is only one species
-
-        t : float (in seconds), optional
-            Time at which to obtain the data (if this does not correspond to
-            an existing iteration, the closest existing iteration will be used)
-            Either `t` or `iteration` should be given by the user.
-
-        iteration : int
-            The iteration at which to obtain the data
-            Either `t` or `iteration` should be given by the user.
-
-        select: dict or ParticleTracker object, optional
-            - If `select` is a dictionary:
-            then it lists a set of rules to select the particles, of the form
-            'x' : [-4., 10.]   (Particles having x between -4 and 10 meters)
-            'ux' : [-0.1, 0.1] (Particles having ux between -0.1 and 0.1 mc)
-            'uz' : [5., None]  (Particles with uz above 5 mc)
-            - If `select` is a ParticleTracker object:
-            then it returns particles that have been selected at another
-            iteration ; see the docstring of `ParticleTracker` for more info.
-
-        plot : bool, optional
-           Whether to plot the requested quantity
-           Plotting support is only available when requesting one or two
-           quantities (i.e. when var_list is of length 1 or 2)
-
-        nbins : int, optional
-           (Only used when `plot` is True)
-           Number of bins for the histograms
-
-        plot_range : list of lists
-           A list containing 2 lists of 2 elements each
-           Indicates the values between which to perform the histogram,
-           along the 1st axis (first list) and 2nd axis (second list)
-           Default: the range is automatically determined
-
-        use_field_mesh: bool, optional
-           (Only used when `plot` is True)
-           Whether to use the information of the spatial mesh (whenever
-           possible) in order to choose the parameters of the histograms.
-           More precisely, when this is True:
-           - The extent of the histogram (along any spatial dimension) is
-             automatically chosen to be roughly the extent of the spatial mesh.
-           - The number of bins (along any spatial dimension) is slightly
-             modified (from the value `nbins` provided by the user) so that
-             the spacing of the histogram is an integer multiple of the grid
-             spacing. This avoids artifacts in the plot, whenever particles
-             are regularly spaced in each cell of the spatial mesh.
-
-        histogram_deposition : string
-            Either `ngp` (Nearest Grid Point) or `cic` (Cloud-In-Cell)
-            When plotting the particle histogram, this determines how
-            particles affects neighboring bins.
-            `cic` (which is the default) leads to smoother results than `ngp`.
-
-        **kw : dict, otional
-           Additional options to be passed to matplotlib's
-           hist or hist2d.
-
-        Returns
-        -------
-        A list of 1darray corresponding to the data requested in `var_list`
-        (one 1darray per element of 'var_list', returned in the same order)
-        """
-        # Check that the species required are present
-        if self.avail_species is None:
-            raise OpenPMDException('No particle data in this time series')
-        # If there is only one species, infer that the user asks for that one
-        if species is None and len(self.avail_species) == 1:
-            species = self.avail_species[0]
-        if species not in self.avail_species:
-            species_list = '\n - '.join(self.avail_species)
-            raise OpenPMDException(
-                "The argument `species` is missing or erroneous.\n"
-                "The available species are: \n - %s\nPlease set the "
-                "argument `species` accordingly." % species_list)
-
-        # Check the list of variables
-        valid_var_list = True
-        if not isinstance(var_list, list):
-            valid_var_list = False
-        else:
-            for quantity in var_list:
-                if quantity not in self.avail_record_components[species]:
-                    valid_var_list = False
-        if not valid_var_list:
-            quantity_list = '\n - '.join(
-                self.avail_record_components[species])
-            raise OpenPMDException(
-                "The argument `var_list` is missing or erroneous.\n"
-                "It should be a list of strings representing species record "
-                "components.\n The available quantities for species '%s' are:"
-                "\n - %s\nPlease set the argument `var_list` "
-                "accordingly." % (species, quantity_list) )
-
-        # Check the format of the particle selection
-        if select is None or isinstance(select, ParticleTracker):
-            pass
-        elif isinstance(select, dict):
-            # Dictionary: Check that all selection quantities are available
-            valid_select_list = True
-            for quantity in select.keys():
-                if not (quantity in self.avail_record_components[species]):
-                    valid_select_list = False
-            if not valid_select_list:
-                quantity_list = '\n - '.join(
-                    self.avail_record_components[species])
-                raise OpenPMDException(
-                    "The argument `select` is erroneous.\n"
-                    "It should be a dictionary whose keys represent particle "
-                    "quantities.\n The available quantities are: "
-                    "\n - %s\nPlease set the argument `select` "
-                    "accordingly." % quantity_list)
-        else:
-            raise OpenPMDException("The argument `select` is erroneous.\n"
-            "It should be either a dictionary or a ParticleTracker object.")
-
-        # Find the output that corresponds to the requested time/iteration
-        # (Modifies self._current_i, self.current_iteration and self.current_t)
-        self._find_output(t, iteration)
-        # Get the corresponding iteration
-        iteration = self.iterations[self._current_i]
-
-        # Extract the list of particle quantities
-        data_list = []
-        for quantity in var_list:
-            data_list.append( self.data_reader.read_species_data(
-                iteration, species, quantity, self.extensions))
-        # Apply selection if needed
-        if isinstance( select, dict ):
-            data_list = apply_selection( iteration, self.data_reader,
-                data_list, select, species, self.extensions)
-        elif isinstance( select, ParticleTracker ):
-            data_list = select.extract_tracked_particles( iteration,
-                self.data_reader, data_list, species, self.extensions )
-
-        # Plotting
-        if plot and len(var_list) in [1, 2]:
-
-            # Extract the weights, if they are available
-            if 'w' in self.avail_record_components[species]:
-                w = self.data_reader.read_species_data(
-                    iteration, species, 'w', self.extensions)
-                if isinstance( select, dict ):
-                    w, = apply_selection( iteration, self.data_reader,
-                        [w], select, species, self.extensions)
-                elif isinstance( select, ParticleTracker ):
-                    w, = select.extract_tracked_particles( iteration,
-                        self.data_reader, [w], species, self.extensions )
-            # Otherwise consider that all particles have a weight of 1
-            else:
-                w = np.ones_like(data_list[0])
-
-            # Determine the size of the histogram bins
-            # - First pick default values
-            hist_range = [[None, None], [None, None]]
-            for i_data in range(len(data_list)):
-                data = data_list[i_data]
-
-                # Check if the user specified a value
-                if (plot_range[i_data][0] is not None) and \
-                        (plot_range[i_data][1] is not None):
-                    hist_range[i_data] = plot_range[i_data]
-                # Else use min and max of data
-                elif len(data) != 0:
-                    hist_range[i_data] = [ data.min(), data.max() ]
-                else:
-                    hist_range[i_data] = [ -1., 1. ]
-
-                # Avoid error when the min and max are equal
-                if hist_range[i_data][0] == hist_range[i_data][1]:
-                    if hist_range[i_data][0] == 0:
-                        hist_range[i_data] = [ -1., 1. ]
-                    else:
-                        hist_range[i_data][0] *= 0.99
-                        hist_range[i_data][1] *= 1.01
-
-            hist_bins = [ nbins for i_data in range(len(data_list)) ]
-            # - Then, if required by the user, modify this values by
-            #   fitting them to the spatial grid
-            if use_field_mesh and self.avail_fields is not None:
-                # Extract the grid resolution
-                grid_size_dict, grid_range_dict = \
-                    self.data_reader.get_grid_parameters( iteration,
-                        self.avail_fields, self.fields_metadata )
-                # For each direction, modify the number of bins, so that
-                # the resolution is a multiple of the grid resolution
-                for i_var in range(len(var_list)):
-                    var = var_list[i_var]
-                    if var in grid_size_dict.keys():
-                        # Check that the user indeed allowed this dimension
-                        # to be determined automatically
-                        if (plot_range[i_var][0] is None) or \
-                                (plot_range[i_var][1] is None):
-                            hist_bins[i_var], hist_range[i_var] = \
-                                fit_bins_to_grid(hist_bins[i_var],
-                                grid_size_dict[var], grid_range_dict[var] )
-
-            # - In the case of only one quantity
-            if len(data_list) == 1:
-                # Do the plotting
-                self.plotter.hist1d(data_list[0], w, var_list[0], species,
-                        self._current_i, hist_bins[0], hist_range,
-                        deposition=histogram_deposition, **kw)
-            # - In the case of two quantities
-            elif len(data_list) == 2:
-                # Do the plotting
-                self.plotter.hist2d(data_list[0], data_list[1], w,
-                    var_list[0], var_list[1], species,
-                    self._current_i, hist_bins, hist_range,
-                    deposition=histogram_deposition, **kw)
-
-        # Output the data
-        return(data_list)
 
     def get_field(self, field=None, coord=None, t=None, iteration=None,
                   m='all', theta=0., slice_across=None,
@@ -533,6 +299,8 @@ class OpenPMDTimeSeries(InteractiveViewer):
             else:
                 raise OpenPMDException('Cannot plot %d-dimensional data.\n'
                     'Use the argument `slice_across`, or set `plot=False`' % F.ndim)
+
+        print("get_field", F, info)
 
         # Return the result
         return(F, info)
