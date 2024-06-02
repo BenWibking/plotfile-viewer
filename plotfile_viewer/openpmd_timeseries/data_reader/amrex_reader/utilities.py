@@ -67,12 +67,7 @@ def is_scalar_record(record):
     ------
     A boolean indicating whether the record is scalar
     """
-    scalar = False
-    if 'value' in record.attrs:
-        scalar = True
-    elif isinstance(record, h5py.Dataset):
-        scalar = True
-
+    scalar = True
     return(scalar)
 
 
