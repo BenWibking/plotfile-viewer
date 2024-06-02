@@ -10,8 +10,7 @@ License: 3-Clause-BSD-LBNL
 
 import numpy as np
 from tqdm import tqdm
-from .utilities import apply_selection, fit_bins_to_grid, try_array, \
-                        sanitize_slicing, combine_cylindrical_components
+from .utilities import apply_selection, fit_bins_to_grid, try_array, sanitize_slicing
 from .plotter import Plotter
 from .data_reader import DataReader, available_backends
 from .interactive import InteractiveViewer
