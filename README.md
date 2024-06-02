@@ -60,4 +60,5 @@ pip install -e .
 In addition, if you wish to use the interactive GUI, please type
 ```
 pip install jupyter
+pip install ipympl
 ```
