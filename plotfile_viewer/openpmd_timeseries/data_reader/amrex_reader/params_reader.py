@@ -97,6 +97,8 @@ def read_plotfile_params(filename, iteration, extract_parameters=True):
     params['avail_species'] = None
     params['avail_record_components'] = None
 
+    print("plotfile params: ", params)
+
     # Close the file and return the parameters
     return(t, params)
 

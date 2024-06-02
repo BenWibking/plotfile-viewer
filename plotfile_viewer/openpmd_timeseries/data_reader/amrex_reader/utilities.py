@@ -54,14 +54,14 @@ def list_files(path_to_dir):
     return iterations, iteration_to_file
 
 
-def get_data(dset, i_slice=None, pos_slice=None, output_type=None):
+def get_data(dfile, field=None, i_slice=None, pos_slice=None, output_type=None):
     """
     Extract the data from a (possibly constant) dataset
     Slice the data according to the parameters i_slice and pos_slice
 
     Parameters:
     -----------
-    dset: an h5py.Dataset or h5py.Group (when constant)
+    dset: a pyAMReX PlotFileData object
         The object from which the data is extracted
 
     pos_slice: int or list of int, optional
@@ -78,49 +78,47 @@ def get_data(dset, i_slice=None, pos_slice=None, output_type=None):
     --------
     An np.ndarray (non-constant dataset) or a single double (constant dataset)
     """
-    # For back-compatibility: Convert pos_slice and i_slice to
-    # single-element lists if they are not lists (e.g. float
-    # and int respectively).
-    if pos_slice is not None and not isinstance(pos_slice, list):
-        pos_slice = [pos_slice]
-    if i_slice is not None and not isinstance(i_slice, list):
-        i_slice = [i_slice]
-    # Case of a constant dataset
-    if isinstance(dset, h5py.Group):
-        shape = dset.attrs['shape']
-        # Restrict the shape if slicing is enabled
-        if pos_slice is not None:
-            shape = [ x for index, x in enumerate(shape) if
-                      index not in pos_slice ]
-        # Create the corresponding dataset
-        data = dset.attrs['value'] * np.ones(shape)
+    probDomain = dfile.probDomain(0)
+    alldata = []
 
-    # Case of a non-constant dataset
-    elif isinstance(dset, h5py.Dataset):
-        if pos_slice is None:
-            data = dset[...]
+    if field is not None:
+        mfdata = dfile.get(0, field)
+        alldata = np.zeros((probDomain.big_end - probDomain.small_end + 1))
+    else:
+        mfdata = dfile.get(0)
+        alldata = np.zeros((probDomain.big_end - probDomain.small_end + 1) + (dfile.nComp(),))
+
+    for mfi in mfdata:
+        bx = mfi.tilebox()
+        marr = mfdata.array(mfi)
+        marr_xp = marr.to_xp()
+        i_s, j_s = tuple(bx.small_end)
+        i_e, j_e = tuple(bx.big_end)
+        if field is not None:
+            alldata[i_s : i_e + 1, j_s : j_e + 1] = marr_xp[:, :, 0, 0]
         else:
-            # Get largest element of pos_slice
-            max_pos = max(pos_slice)
-            # Create list of indices list_index of type
-            # [:, :, :, ...] where Ellipsis starts at max_pos + 1
-            list_index = [np.s_[:]] * (max_pos + 2)
-            list_index[max_pos + 1] = np.s_[...]
-            # Fill list_index with elements of i_slice
-            for count, dir_index in enumerate(pos_slice):
-                list_index[dir_index] = i_slice[count]
-            # Convert list_index into a tuple
-            tuple_index = tuple(list_index)
-            # Slice dset according to tuple_index
-            data = dset[tuple_index]
+            alldata[i_s : i_e + 1, j_s : j_e + 1, :] = marr_xp[:, :, 0, :]
+
+    data = []
+    if pos_slice is None:
+        data = alldata
+    else:
+        # Get largest element of pos_slice
+        max_pos = max(pos_slice)
+        # Create list of indices list_index of type
+        # [:, :, :, ...] where Ellipsis starts at max_pos + 1
+        list_index = [np.s_[:]] * (max_pos + 2)
+        list_index[max_pos + 1] = np.s_[...]
+        # Fill list_index with elements of i_slice
+        for count, dir_index in enumerate(pos_slice):
+            list_index[dir_index] = i_slice[count]
+        # Convert list_index into a tuple
+        tuple_index = tuple(list_index)
+        # Slice dset according to tuple_index
+        data = alldata[tuple_index]
 
     # Convert to the right type
     if (output_type is not None) and (data.dtype != output_type):
         data = data.astype( output_type )
-    # Scale by the conversion factor
-    if np.issubdtype(data.dtype, np.floating) or \
-        np.issubdtype(data.dtype, np.complexfloating):
-        if dset.attrs['unitSI'] != 1.0:
-            data *= dset.attrs['unitSI']
 
-    return(data)
+    return data

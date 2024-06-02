@@ -33,7 +33,7 @@ def read_field_cartesian( filename, iteration, field, coord, axis_labels,
        Which field to extract
 
     coord : string, optional
-       Which component of the field to extract
+       Which component of the field to extract (unused)
 
     axis_labels: list of strings
        The name of the dimensions of the array (e.g. ['x', 'y', 'z'])
@@ -62,14 +62,13 @@ def read_field_cartesian( filename, iteration, field, coord, axis_labels,
     """
     # Open the plot file
     dfile = amr.PlotFileData(filename)
-    # Extract the iteration
-    it = dfile.levelStep(0)
 
     # Dimensions of the grid
     shape = dfile.probDomain(0)
     grid_spacing = dfile.cellSize(0)
     global_offset = dfile.probLo()
-
+    position = [0, 0]
+    
     # Current simulation time
     time = dfile.time()
 
@@ -103,25 +102,21 @@ def read_field_cartesian( filename, iteration, field, coord, axis_labels,
         axes = { i: axis_labels[i] for i in range(len(axis_labels)) }
 
         # Extract data
-        F = get_data( dfile, list_i_cell, list_slicing_index )
+        F = get_data( dfile, field, list_i_cell, list_slicing_index )
 
         info = FieldMetaInformation( axes, shape, grid_spacing, global_offset,
-                group.attrs['gridUnitSI'], dset.attrs['position'],
-                time, iteration, component_attrs=dict(dset.attrs),
-                field_attrs=dict(group.attrs) )
+                1.0, position,
+                time, iteration, component_attrs={}, field_attrs={} )
     else:
-        F = get_data( dfile )
+        F = get_data( dfile, field )
         axes = { i: axis_labels[i] for i in range(len(axis_labels)) }
-        
-        info = FieldMetaInformation( axes, F.shape,
-            group.attrs['gridSpacing'], group.attrs['gridGlobalOffset'],
-            group.attrs['gridUnitSI'], dset.attrs['position'],
-            time, iteration, component_attrs=dict(dset.attrs),
-            field_attrs=dict(group.attrs) )
 
-    # Close the file
-    dfile.close()
-    return( F, info )
+        info = FieldMetaInformation( axes, F.shape,
+            dfile.cellSize(0), dfile.probLo(0),
+            1.0, position,
+            time, iteration, component_attrs={}, field_attrs={} )
+
+    return F, info
 
 
 def get_grid_parameters( filename, iteration, avail_fields, metadata ):
@@ -173,5 +168,4 @@ def get_grid_parameters( filename, iteration, avail_fields, metadata ):
         grid_range_dict[coord] = \
             [ grid_offset[i], grid_offset[i] + grid_size[i] * grid_spacing[i] ]
 
-
-    return( grid_size_dict, grid_range_dict )
+    return grid_size_dict, grid_range_dict

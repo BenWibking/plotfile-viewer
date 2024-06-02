@@ -44,6 +44,7 @@ class DataReader( object ):
         # Point to the correct reader module
         if self.backend == 'amrex':
             self.iteration_to_file = {}
+            amrex_reader.amr.initialize([])
         else:
             raise RuntimeError('Unknown backend: %s' % self.backend)
 
@@ -75,6 +76,7 @@ class DataReader( object ):
                     "Valid files must end with 'plt' followed by one or more digits."
                     .format(path_to_dir))
 
+        print("list_iterations")
         return iterations
 
     def read_plotfile_params(self, iteration, extract_parameters=True):
@@ -99,6 +101,7 @@ class DataReader( object ):
         """
         if self.backend == 'amrex':
             filename = self.iteration_to_file[iteration]
+            print("read_plotfile_params")
             return amrex_reader.read_plotfile_params(
                     filename, iteration, extract_parameters)
 
@@ -146,6 +149,7 @@ class DataReader( object ):
         """
         if self.backend == 'amrex':
             filename = self.iteration_to_file[iteration]
+            print("read_field_cartesian")
             return amrex_reader.read_field_cartesian(
                 filename, iteration, field, coord, axis_labels,
                 slice_relative_position, slice_across )
@@ -181,6 +185,7 @@ class DataReader( object ):
         """
         if self.backend == 'amrex':
             filename = self.iteration_to_file[iteration]
+            print("get_grid_parameters")
             return amrex_reader.get_grid_parameters(
                 filename, iteration, avail_fields, metadata )
  
