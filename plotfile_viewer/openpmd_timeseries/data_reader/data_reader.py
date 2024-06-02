@@ -15,7 +15,6 @@ import re
 available_backends = []
 
 try:
-    import amrex.space2d as amr
     from . import amrex_reader
     available_backends.append('amrex')
 except ImportError:

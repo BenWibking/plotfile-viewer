@@ -8,7 +8,8 @@ Authors: Remi Lehe, Axel Huebl
 License: 3-Clause-BSD-LBNL
 """
 
-import h5py
+import amrex.space2d as amr
+
 import numpy as np
 from .utilities import is_scalar_record, get_shape, join_infile_path
 
@@ -37,16 +38,10 @@ def read_plotfile_params(filename, iteration, extract_parameters=True):
       When extract_parameters is False, the second argument returned is None.
     """
     # Open the file, and do a version check
-    f = h5py.File(filename, 'r')
-    version = f.attrs['plotfile'].decode()
-    if version[:2] != '1.':
-        raise ValueError(
-            "File %s is not supported: Invalid plotfile version: "
-            "%s)" % (filename, version))
+    f = amr.PlotFileData(filename)
 
-    # Find the base path object, and extract the time
-    bpath = f['/data/{0}'.format( iteration )]
-    t = bpath.attrs["time"] * bpath.attrs["timeUnitSI"]
+    # Extract the time
+    t = f.time()
 
     # If the user did not request more parameters, close file and exit
     if not extract_parameters:
@@ -57,61 +52,34 @@ def read_plotfile_params(filename, iteration, extract_parameters=True):
     params = {}
 
     # Find out supported plotfile extensions claimed by this file
-    # note: a file might implement multiple extensions
-    known_extensions = {'ED-PIC': np.uint32(1)}
-    bitmask_all_extensions = f.attrs['plotfileextension']
     params['extensions'] = []
-    for extension, bitmask in known_extensions.items():
-        # This uses a bitmask to identify activated extensions
-        # efficiently in static programming languages via
-        # a single attribute and a binary AND (&) operation.
-        # Standard: https://git.io/vwnMw
-        # Bitmasks: https://en.wikipedia.org/wiki/Mask_%28computing%29
-        if bitmask_all_extensions & bitmask == bitmask:
-            params['extensions'].append(extension)
 
     # Find out whether fields are present and extract their metadata
     fields_available = False
-    if ('meshesPath' in f.attrs):        # Check for plotfile 1.1 files
-        meshes_path = f.attrs['meshesPath'].decode().strip('/')
-        if meshes_path in bpath.keys():  # Check for plotfile 1.0 files
-            fields_available = True
+    if f.nComp() > 0:
+        fields_available = True
     if fields_available:
         params['avail_fields'] = []
         params['fields_metadata'] = {}
 
         # Loop through the available fields
-        for field_name in bpath[meshes_path].keys():
-            field = bpath[join_infile_path(meshes_path, field_name)]
+        for field_name in f.varNames():
             metadata = {}
-            metadata['geometry'] = field.attrs['geometry'].decode()
-            metadata['axis_labels'] = [ coord.decode() for coord in
-                                        field.attrs['axisLabels'] ]
-            # Swap the order of the labels if the code that wrote the HDF5 file
-            # was Fortran order (i.e. reverse order with respect to Python)
-            if field.attrs['dataOrder'].decode() == 'F':
-                metadata['axis_labels'] = metadata['axis_labels'][::-1]
-            # Check whether the field is a vector or a scalar
-            if is_scalar_record(field):
-                metadata['type'] = 'scalar'
-                components = []
+
+            if f.coordSys() == amr.CoordSys.cartesian:
+                metadata['geometry'] = "cartesian"
             else:
-                metadata['type'] = 'vector'
-                components = list(field.keys())
-            # Register available components
+                # unsupported geometry
+                raise Exception("unsupported coordinate system!")
+            
+            metadata['axis_labels'] = [ 'x', 'y' ]
+            metadata['type'] = 'scalar' # assume scalar components
+            components = []
             metadata['avail_components'] = components
-            # Check the number of modes
-            if metadata['geometry'] == "thetaMode":
-                if is_scalar_record(field):
-                    Nm, _, _ = get_shape(field)
-                else:
-                    coord = list(field.keys())[0]
-                    Nm, _, _ = get_shape(field[coord])
-                metadata['avail_circ_modes'] = ['all'] + \
-                    [str(m) for m in range(int(Nm / 2) + 1)]
+
             # Check if this a 1d, 2d or 3d Cartesian
-            elif metadata['geometry'] == "cartesian":
-                dim = len(metadata['axis_labels'])
+            if metadata['geometry'] == "cartesian":
+                dim = f.spaceDim()
                 if dim == 1:
                     metadata['geometry'] = "1dcartesian"
                 elif dim == 2:
@@ -126,58 +94,11 @@ def read_plotfile_params(filename, iteration, extract_parameters=True):
     else:
         params['avail_fields'] = None
 
-    # Find out whether particles are present, and if yes of which species
-    particles_available = False
-    if ('particlesPath' in f.attrs):        # Check for plotfile 1.1 files
-        particle_path = f.attrs['particlesPath'].decode().strip('/')
-        if particle_path in bpath.keys():   # Check for plotfile 1.0 files
-            # Check that there is at least one species
-            if len(bpath[particle_path].keys()) > 0:
-                particles_available = True
-    if particles_available:
-        # Particles are present ; extract the species
-        params['avail_species'] = []
-        for species_name in bpath[particle_path].keys():
-            params['avail_species'].append(species_name)
-        # dictionary with list of record components for each species
-        record_components = {}
-        # Go through all species
-        for species_name in iter(params['avail_species']):
-            species = bpath[join_infile_path(particle_path, species_name)]
-            record_components[species_name] = []
-
-            # Go through all the particle records of this species
-            for record_name in species.keys():
-                # Skip the particlePatches, which are not used here.
-                if record_name == 'particlePatches':
-                    continue
-                record = species[record_name]
-                if is_scalar_record(record):
-                    # Add the name of the scalar record
-                    record_components[species_name]. \
-                        append(record_name)
-                else:
-                    # Add each component of the vector record
-                    for coord in record.keys():
-                        record_components[species_name]. \
-                            append(join_infile_path(record_name, coord))
-            # Simplify the name of some standard plotfile records
-            record_components[species_name] = \
-                simplify_record(record_components[species_name])
-        params['avail_record_components'] = record_components
-        # deprecated
-        first_species_name = next(iter(params['avail_species']))
-        params['avail_ptcl_quantities'] = \
-            record_components[first_species_name]
-    else:
-        # Particles are absent
-        params['avail_species'] = None
-        params['avail_record_components'] = None
-        # deprecated
-        params['avail_ptcl_quantities'] = None
+    # Particles are currently not supported
+    params['avail_species'] = None
+    params['avail_record_components'] = None
 
     # Close the file and return the parameters
-    f.close()
     return(t, params)
 
 
