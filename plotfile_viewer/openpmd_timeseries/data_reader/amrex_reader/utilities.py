@@ -9,7 +9,6 @@ Authors: Remi Lehe, Axel Huebl
 License: 3-Clause-BSD-LBNL
 """
 import os
-import h5py
 import numpy as np
 
 
@@ -53,22 +52,6 @@ def list_files(path_to_dir):
     print(iteration_to_file)
 
     return iterations, iteration_to_file
-
-
-def is_scalar_record(record):
-    """
-    Determine whether a record is a scalar record or a vector record
-
-    Parameter
-    ---------
-    record: an h5py Dataset or an h5py Group
-
-    Return
-    ------
-    A boolean indicating whether the record is scalar
-    """
-    scalar = True
-    return(scalar)
 
 
 def get_data(dset, i_slice=None, pos_slice=None, output_type=None):
@@ -141,49 +124,3 @@ def get_data(dset, i_slice=None, pos_slice=None, output_type=None):
             data *= dset.attrs['unitSI']
 
     return(data)
-
-
-def get_shape(dset):
-    """
-    Extract the shape of a (possibly constant) dataset
-
-    Parameters:
-    -----------
-    dset: an h5py.Dataset or h5py.Group (when constant)
-        The object whose shape is extracted
-
-    Returns:
-    --------
-    A tuple corresponding to the shape
-    """
-    # Case of a constant dataset
-    if isinstance(dset, h5py.Group):
-        shape = dset.attrs['shape']
-    # Case of a non-constant dataset
-    elif isinstance(dset, h5py.Dataset):
-        shape = dset.shape
-
-    return(shape)
-
-
-def join_infile_path(*paths):
-    """
-    Join path components using '/' as separator.
-    This method is defined as an alternative to os.path.join, which uses '\\'
-    as separator in Windows environments and is therefore not valid to navigate
-    within data files.
-
-    Parameters:
-    -----------
-    *paths: all strings with path components to join
-
-    Returns:
-    --------
-    A string with the complete path using '/' as separator.
-    """
-    # Join path components
-    path = '/'.join(paths)
-    # Correct double slashes, if any is present
-    path = path.replace('//', '/')
-
-    return path

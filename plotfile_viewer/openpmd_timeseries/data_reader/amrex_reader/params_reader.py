@@ -11,7 +11,6 @@ License: 3-Clause-BSD-LBNL
 import amrex.space2d as amr
 
 import numpy as np
-from .utilities import is_scalar_record, get_shape, join_infile_path
 
 
 def read_plotfile_params(filename, iteration, extract_parameters=True):
