@@ -10,6 +10,7 @@ License: 3-Clause-BSD-LBNL
 """
 import numpy as np
 import math
+
 try:
     import warnings
     import matplotlib
@@ -17,10 +18,6 @@ try:
     matplotlib_installed = True
 except ImportError:
     matplotlib_installed = False
-
-from .numba_wrapper import numba_installed
-if numba_installed:
-    from .utilities import histogram_cic_1d, histogram_cic_2d
 
 # Redefine the default matplotlib formatter for ticks
 if matplotlib_installed:
@@ -107,162 +104,6 @@ class Plotter(object):
         # (Useful when labeling the figures)
         self.t = t
         self.iterations = iterations
-
-    def hist1d(self, q1, w, quantity1, species, current_i, nbins, hist_range,
-               cmap='Blues', vmin=None, vmax=None, deposition='cic', **kw):
-        """
-        Plot a 1D histogram of the particle quantity q1
-        Sets the proper labels
-
-        Parameters
-        ----------
-        q1: 1darray of floats
-            An array with one element per macroparticle, representing
-            the quantity to be plotted.
-
-        w: 1darray of floats
-            An array with one element per macroparticle, representing
-            the number of real particles that correspond to each macroparticle
-
-        quantity1: string
-            The name of the quantity to be plotted (for labeling purposes)
-
-        species: string
-            The name of the species from which the data is taken
-
-        current_i: int
-            The index of this iteration, within the iterations list
-
-        nbins : int
-           Number of bins for the histograms
-
-        hist_range : list contains 2 lists of 2 floats
-           Extent of the histogram along each direction
-
-        deposition : string
-            Either `ngp` (Nearest Grid Point) or `cic` (Cloud-In-Cell)
-            When plotting the particle histogram, this determines how
-            particles affects neighboring bins.
-            `cic` (which is the default) leads to smoother results than `ngp`.
-
-        **kw : dict, otional
-           Additional options to be passed to matplotlib's bar function
-        """
-        # Check if matplotlib is available
-        check_matplotlib()
-
-        # Find the iteration and time
-        iteration = self.iterations[current_i]
-        time = self.t[current_i]
-
-        # Check deposition method
-        if deposition == 'cic' and not numba_installed:
-            print_cic_unavailable()
-            deposition = 'ngp'
-
-        # Bin the particle data
-        q1 = q1.astype( np.float64 )
-        if deposition == 'ngp':
-            binned_data, _ = np.histogram(q1, nbins, hist_range[0], weights=w)
-        elif deposition == 'cic':
-            binned_data = histogram_cic_1d(
-                q1, w, nbins, hist_range[0][0], hist_range[0][1])
-        else:
-            raise ValueError('Unknown deposition method: %s' % deposition)
-
-        # Do the plot
-        bin_size = (hist_range[0][1] - hist_range[0][0]) / nbins
-        bin_coords = hist_range[0][0] + bin_size * ( 0.5 + np.arange(nbins) )
-        plt.bar( bin_coords, binned_data, width=bin_size, **kw )
-        plt.xlim( hist_range[0] )
-        plt.ylim( hist_range[1] )
-        plt.xlabel(quantity1, fontsize=self.fontsize)
-        plt.title("%s:   t =  %.2e s    (iteration %d)"
-                  % (species, time, iteration), fontsize=self.fontsize)
-        # Format the ticks
-        ax = plt.gca()
-        ax.get_xaxis().set_major_formatter( tick_formatter )
-        ax.get_yaxis().set_major_formatter( tick_formatter )
-
-    def hist2d(self, q1, q2, w, quantity1, quantity2, species, current_i,
-                nbins, hist_range, cmap='Blues', vmin=None, vmax=None,
-                deposition='cic', **kw):
-        """
-        Plot a 2D histogram of the particle quantity q1
-        Sets the proper labels
-
-        Parameters
-        ----------
-        q1: 1darray of floats
-            An array with one element per macroparticle, representing
-            the quantity to be plotted.
-
-        w: 1darray of floats
-            An array with one element per macroparticle, representing
-            the number of real particles that correspond to each macroparticle
-
-        quantity1, quantity2: strings
-            The name of the quantity to be plotted (for labeling purposes)
-
-        species: string
-            The name of the species from which the data is taken
-
-        current_i: int
-            The index of this iteration, within the iterations list
-
-        nbins : list of 2 ints
-           Number of bins along each direction, for the histograms
-
-        hist_range : list contains 2 lists of 2 floats
-           Extent of the histogram along each direction
-
-        deposition : string
-            Either `ngp` (Nearest Grid Point) or `cic` (Cloud-In-Cell)
-            When plotting the particle histogram, this determines how
-            particles affects neighboring bins.
-            `cic` (which is the default) leads to smoother results than `ngp`.
-
-        **kw : dict, otional
-           Additional options to be passed to matplotlib's imshow function
-        """
-        # Check if matplotlib is available
-        check_matplotlib()
-
-        # Find the iteration and time
-        iteration = self.iterations[current_i]
-        time = self.t[current_i]
-
-        # Check deposition method
-        if deposition == 'cic' and not numba_installed:
-            print_cic_unavailable()
-            deposition = 'ngp'
-
-        # Bin the particle data
-        q1 = q1.astype( np.float64 )
-        q2 = q2.astype( np.float64 )
-        if deposition == 'ngp':
-            binned_data, _, _ = np.histogram2d(
-                q1, q2, nbins, hist_range, weights=w)
-        elif deposition == 'cic':
-            binned_data = histogram_cic_2d( q1, q2, w,
-                nbins[0], hist_range[0][0], hist_range[0][1],
-                nbins[1], hist_range[1][0], hist_range[1][1] )
-        else:
-            raise ValueError('Unknown deposition method: %s' % deposition)
-
-        # Do the plot
-        plt.imshow( binned_data.T, extent=hist_range[0] + hist_range[1],
-             origin='lower', interpolation='nearest', aspect='auto',
-             cmap=cmap, vmin=vmin, vmax=vmax, **kw )
-        plt.colorbar()
-        plt.xlabel(quantity1, fontsize=self.fontsize)
-        plt.ylabel(quantity2, fontsize=self.fontsize)
-        plt.title("%s:   t =  %.2e s   (iteration %d)"
-                  % (species, time, iteration), fontsize=self.fontsize)
-        # Format the ticks
-        ax = plt.gca()
-        ax.get_xaxis().set_major_formatter( tick_formatter )
-        ax.get_yaxis().set_major_formatter( tick_formatter )
 
     def show_field_1d( self, F, info, field_label, current_i, plot_range,
                             vmin=None, vmax=None, **kw ):
@@ -400,13 +241,6 @@ class Plotter(object):
         ax = plt.gca()
         ax.get_xaxis().set_major_formatter( tick_formatter )
         ax.get_yaxis().set_major_formatter( tick_formatter )
-
-
-def print_cic_unavailable():
-    warnings.warn(
-        "\nCIC particle histogramming is unavailable because \n"
-        "Numba is not installed. NGP histogramming is used instead.\n"
-        "Please considering installing numba (e.g. `pip install numba`)")
 
 
 def check_matplotlib():

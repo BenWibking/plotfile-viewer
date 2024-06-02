@@ -39,7 +39,7 @@ class OpenPMDTimeSeries(InteractiveViewer):
 
     def __init__(self, path_to_dir, check_all_files=True, backend=None):
         """
-        Initialize an plotfile time series
+        Initialize a plotfile time series
 
         More precisely, scan the directory and extract the plotfile files,
         as well as some useful plotfile parameters
