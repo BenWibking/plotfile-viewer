@@ -1,4 +1,6 @@
-# plotfile-viewer
+# plotfile-viewer [WIP]
+
+**This package is currently a work-in-progress. Do not expect anything to work yet!!**
 
 ## Overview
 
@@ -26,6 +28,8 @@ pip install ipympl
 ```
 
 ## Usage
+
+**This package is currently a work-in-progress. Do not expect anything to work yet!!**
 
 If you wish to use the **interactive GUI**, the installation of
 `plotfile-viewer` provides a convenient executable which automatically
