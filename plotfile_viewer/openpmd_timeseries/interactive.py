@@ -136,6 +136,7 @@ class InteractiveViewer(object):
                     plot_range=plot_range, **kw_fld )
                 
                 # restore the old zoom settings using the *new* figure
+                # FIXME: this does not always work well for 1D plots...
                 if self.is_first_plot is False:
                     toolbar = plt.gcf().canvas.manager.toolbar
                     toolbar.update()        # Clear the axes stack
