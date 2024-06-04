@@ -106,10 +106,7 @@ class Plotter(object):
         # - Along the second dimension
         if (plot_range[1][0] is not None) and (plot_range[1][1] is not None):
             plt.ylim( plot_range[1][0], plot_range[1][1] )
-        # Format the ticks
-        ax = plt.gca()
-        ax.get_xaxis().set_major_formatter( tick_formatter )
-        ax.get_yaxis().set_major_formatter( tick_formatter )
+
 
     @debug_view.capture(clear_output=False)
     def show_field_2d(self, F, info, slice_across, m, field_label, geometry,
@@ -181,11 +178,7 @@ class Plotter(object):
         # - Along the second dimension
         if (plot_range[1][0] is not None) and (plot_range[1][1] is not None):
             plt.xlim( plot_range[1][0], plot_range[1][1] )
-        
-        # Format the ticks
-        ax = plt.gca()
-        ax.get_xaxis().set_major_formatter( tick_formatter )
-        ax.get_yaxis().set_major_formatter( tick_formatter )
+
 
 @debug_view.capture(clear_output=False)
 def check_matplotlib():
