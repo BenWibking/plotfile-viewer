@@ -85,6 +85,7 @@ class InteractiveViewer(object):
             # Do the refresh
             if do_refresh:
                 # save the old zoom for restoring later
+                # (ref: https://stackoverflow.com/questions/70336467/keep-zoom-and-ability-to-zoom-out-to-current-data-extent-in-matplotlib-pyplot)
                 old_ax = plt.gcf().gca()
                 old_x_lim = old_ax.get_xlim()
                 old_y_lim = old_ax.get_ylim()
