@@ -9,7 +9,17 @@ produced by the [DiagFramePlane diagnostic](https://github.com/AMReX-Combustion/
 
 This package contains a set of tools to load and visualize the
 contents of a timeseries of AMReX plotfiles (currently, 2D Cartesian plotfiles only).
-We hope to support 3D Cartesian plotfiles in the future.
+
+### Screenshot
+![Screenshot](docs/viewer_screenshot.png "Screenshot")
+
+
+### Features
+* 2D Cartesian plotfiles
+
+### Roadmap
+* 3D Cartesian plotfiles (with lazy loading of FABs)
+* Particles
 
 ## Installation
 
@@ -39,3 +49,8 @@ browser**. To use this executable, simply type in a regular terminal:
 `plotfile_notebook`
 
 (This executable is installed by default, when installing `plotfile-viewer`.)
+
+## Acknowledgement
+
+We thank [openPMD-viewer](https://github.com/openPMD/openPMD-viewer) for providing
+the inspiration (and original codebase) for this project.
