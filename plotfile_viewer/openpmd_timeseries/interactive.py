@@ -116,6 +116,10 @@ class InteractiveViewer(object):
                 kw_fld['vmin'] = vmin
                 kw_fld['vmax'] = vmax
                 kw_fld['cmap'] = fld_color_button.cmap.value
+                if fld_color_button.logscale.value:
+                    kw_fld['norm'] = "log"
+                else:
+                    kw_fld['norm'] = "linear"
                 # Determine range of the plot from widgets
                 plot_range = [ fld_hrange_button.get_range(),
                                 fld_vrange_button.get_range() ]
@@ -439,9 +443,17 @@ class ColorBarSelector(object):
             The default value for the initial value of vmin and vmax
         """
         # Create the colormap widget
-        available_cmaps = sorted( plt.colormaps() )
+        #available_cmaps = sorted( plt.colormaps() )
+        available_cmaps = [
+            'viridis', 'plasma', 'inferno', 'magma', 'cividis',
+            'Greys', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
+            'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
+            'GnBu', 'PuBu', 'YlGnBu', 'PuBuGn', 'BuGn', 'YlGn',
+            'PiYG', 'PRGn', 'BrBG', 'PuOr', 'RdGy', 'RdBu',
+            'RdYlBu', 'RdYlGn', 'Spectral', 'coolwarm', 'bwr', 'seismic']
+        
         if default_cmap not in available_cmaps:
-            default_cmap = 'jet'
+            default_cmap = 'viridis'
         self.cmap = widgets.Select(options=available_cmaps, value=default_cmap)
 
         # Convert default_vmin, default vmax to scientific format
@@ -455,11 +467,13 @@ class ColorBarSelector(object):
         self.low_bound = widgets.FloatText( value=default_lowbound )
         self.up_bound = widgets.FloatText( value=default_upbound )
         self.exponent = widgets.FloatText( value=default_exponent )
+        self.logscale = create_checkbox( value=False )
 
         # Add the callback function
         self.active.observe( callback_function, 'value', 'change' )
         self.exponent.observe( callback_function, 'value', 'change' )
         self.cmap.observe( callback_function, 'value', 'change' )
+        self.logscale.observe( callback_function, 'value', 'change' )
 
     def to_container( self ):
         """
@@ -472,25 +486,18 @@ class ColorBarSelector(object):
         set_widget_dimensions( self.up_bound, width=60 )
         set_widget_dimensions( self.exponent, width=45 )
         set_widget_dimensions( self.cmap, width=200 )
+        set_widget_dimensions( self.logscale, width=20 )
+
         # Gather the different widgets on two lines
         cmap_container = widgets.HBox( children=[
             widgets.HTML( "<b>Colorbar:</b>"), self.cmap ])
-        if ipywidgets_version > 4:
-            # For newer version of ipywidgets: add the "x10^" on same line
-            range_container = widgets.HBox( children=[ self.active,
-                add_description("from", self.low_bound, width=30 ),
-                add_description("to", self.up_bound, width=20 ),
-                add_description("x 10^", self.exponent, width=45 ) ] )
-            final_container = widgets.VBox(
-                children=[ cmap_container, range_container ])
-        else:
-            # For older version of ipywidgets: add the "x10^" on new line
-            range_container = widgets.HBox( children=[ self.active,
-                add_description("from", self.low_bound, width=30 ),
-                add_description("to", self.up_bound, width=20 ) ] )
-            final_container = widgets.VBox(
-                children=[ cmap_container, range_container,
-                add_description("x 10^", self.exponent, width=45 ) ])
+        logscale_container = widgets.HBox( children=[widgets.HTML("Log10 scale:"), self.logscale])
+        range_container = widgets.HBox( children=[ self.active,
+            add_description("from", self.low_bound, width=30 ),
+            add_description("to", self.up_bound, width=20 ),
+            add_description("x 10^", self.exponent, width=45 ) ] )
+        final_container = widgets.VBox(
+            children=[ cmap_container, range_container, logscale_container])
         set_widget_dimensions( final_container, width=310 )
         return( final_container )
 
