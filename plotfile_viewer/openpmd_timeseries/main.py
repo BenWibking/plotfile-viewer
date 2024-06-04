@@ -10,22 +10,17 @@ License: 3-Clause-BSD-LBNL
 
 import numpy as np
 from tqdm import tqdm
-from .utilities import apply_selection, fit_bins_to_grid, try_array, sanitize_slicing
+from .utilities import try_array, sanitize_slicing
 from .plotter import Plotter
 from .data_reader import DataReader, available_backends
-from .interactive import InteractiveViewer
+from .interactive import InteractiveViewer, debug_view
 
-
-# Define a custom Exception
 class OpenPMDException(Exception):
-    def __init__(self, value):
-        self.value = value
-        print("EXCEPTION: ", self.value)
- 
-    def __str__(self):
-        return(repr(self.value))
-
-
+    @debug_view.capture(clear_output=True)
+    def __init__(self, message, errors):
+        # Call the base class constructor with the parameters it needs
+        super(OpenPMDException, self).__init__(message)
+        print(self)
 
 class OpenPMDTimeSeries(InteractiveViewer):
     """
@@ -36,6 +31,7 @@ class OpenPMDTimeSeries(InteractiveViewer):
     - slider
     """
 
+    @debug_view.capture(clear_output=True)
     def __init__(self, path_to_dir, check_all_files=True, backend=None):
         """
         Initialize a plotfile time series
@@ -124,6 +120,7 @@ class OpenPMDTimeSeries(InteractiveViewer):
         # - Initialize a plotter object, which holds information about the time
         self.plotter = Plotter(self.t, self.iterations)
 
+    @debug_view.capture(clear_output=True)
     def get_field(self, field=None, coord=None, t=None, iteration=None,
                   m='all', theta=0., slice_across=None,
                   slice_relative_position=None, plot=False,
@@ -238,15 +235,6 @@ class OpenPMDTimeSeries(InteractiveViewer):
         else:
             coord = None
 
-        # Check the mode (for thetaMode)
-        if self.fields_metadata[field]['geometry'] == "thetaMode":
-            avail_circ_modes = self.fields_metadata[field]['avail_circ_modes']
-            if str(m) not in avail_circ_modes:
-                mode_list = '\n - '.join(avail_circ_modes)
-                raise OpenPMDException(
-                    "The requested mode '%s' is not available.\n"
-                    "The available modes are: \n - %s" % (m, mode_list))
-
         # Find the output that corresponds to the requested time/iteration
         # (Modifies self._current_i, self.current_iteration and self.current_t)
         self._find_output(t, iteration)
@@ -262,28 +250,12 @@ class OpenPMDTimeSeries(InteractiveViewer):
         # Get the field data
         geometry = self.fields_metadata[field]['geometry']
         axis_labels = self.fields_metadata[field]['axis_labels']
+
         # - For cartesian
         if geometry in ["1dcartesian", "2dcartesian", "3dcartesian"]:
             F, info = self.data_reader.read_field_cartesian(
                 iteration, field, coord, axis_labels,
                 slice_relative_position, slice_across)
-        # - For thetaMode
-        elif geometry == "thetaMode":
-            if (coord in ['x', 'y']) and \
-                    (self.fields_metadata[field]['type'] == 'vector'):
-                # For Cartesian components, combine r and t components
-                Fr, info = self.data_reader.read_field_circ(
-                    iteration, field, 'r', slice_relative_position,
-                    slice_across, m, theta)
-                Ft, info = self.data_reader.read_field_circ(
-                    iteration, field, 't', slice_relative_position,
-                    slice_across, m, theta)
-                F = combine_cylindrical_components(Fr, Ft, theta, coord, info)
-            else:
-                # For cylindrical or scalar components, no special treatment
-                F, info = self.data_reader.read_field_circ(iteration,
-                    field, coord, slice_relative_position,
-                    slice_across, m, theta)
 
         # Plot the resulting field
         # Deactivate plotting when there is no slice selection
@@ -292,6 +264,7 @@ class OpenPMDTimeSeries(InteractiveViewer):
                 self.plotter.show_field_1d(F, info, field_label,
                 self._current_i, plot_range=plot_range, **kw)
             elif F.ndim == 2:
+                print("self.plotter.show_field_2d")
                 self.plotter.show_field_2d(F, info, slice_across, m,
                     field_label, geometry, self._current_i,
                     plot_range=plot_range, **kw)
@@ -300,10 +273,12 @@ class OpenPMDTimeSeries(InteractiveViewer):
                     'Use the argument `slice_across`, or set `plot=False`' % F.ndim)
 
         print("get_field", F, info)
+        print("F.ndim = ", F.ndim)
 
         # Return the result
         return(F, info)
 
+    @debug_view.capture(clear_output=True)
     def iterate( self, called_method, *args, **kwargs ):
         """
         Repeated calls the method `called_method` for every iteration of this
@@ -357,6 +332,7 @@ class OpenPMDTimeSeries(InteractiveViewer):
             accumulated_result = try_array( accumulated_result )
             return accumulated_result
 
+    @debug_view.capture(clear_output=True)
     def _find_output(self, t, iteration):
         """
         Find the output that correspond to the requested `t` or `iteration`

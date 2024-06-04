@@ -20,6 +20,7 @@ try:
 except ImportError:
     dependencies_installed = False
 
+debug_view = widgets.Output(layout={'border': '1px solid black'})
 
 class InteractiveViewer(object):
 
@@ -50,10 +51,12 @@ class InteractiveViewer(object):
             raise RuntimeError("Failed to load the plotfile-viewer slider.\n"
                 "(Make sure that ipywidgets and matplotlib are installed.)")
 
+        #only for debugging
+        #display(debug_view)
+
         # -----------------------
         # Define useful functions
-        # -----------------------
-
+        @debug_view.capture(clear_output=True)
         def refresh_field(change=None, force=False):
             """
             Refresh the current field figure
@@ -69,6 +72,8 @@ class InteractiveViewer(object):
             force: bool
                 Whether to force the update
             """
+            print("refresh_field()")
+
             # Determine whether to do the refresh
             do_refresh = False
             if (self.avail_fields is not None):
@@ -120,6 +125,7 @@ class InteractiveViewer(object):
                     slice_across=slice_across,
                     plot_range=plot_range, **kw_fld )
 
+        @debug_view.capture(clear_output=True)
         def refresh_field_type(change):
             """
             Refresh the field type and disable the coordinates buttons
@@ -132,6 +138,8 @@ class InteractiveViewer(object):
                 whenever a change of a widget happens
                 (see docstring of ipywidgets.Widget.observe)
             """
+            print("refresh_field_type()")
+
             # Deactivate the field refreshing to avoid callback
             # while modifying the widgets
             saved_refresh_value = fld_refresh_toggle.value
@@ -166,23 +174,32 @@ class InteractiveViewer(object):
             # Show the fields
             refresh_field()
 
+        @debug_view.capture(clear_output=True)
         def change_iteration(change):
             "Plot the result at the required iteration"
+            print("change_iteration()")
+
             # Find the closest iteration
             self._current_i = abs(self.iterations - change['new']).argmin()
             self.current_iteration = self.iterations[ self._current_i ]
             refresh_field()
 
+        @debug_view.capture(clear_output=True)
         def step_fw(b):
             "Plot the result one iteration further"
+            print("step_fw()")
+            
             if self._current_i < len(self.t) - 1:
                 self.current_iteration = self.iterations[self._current_i + 1]
             else:
                 self.current_iteration = self.iterations[self._current_i]
             slider.value = self.current_iteration
 
+        @debug_view.capture(clear_output=True)
         def step_bw(b):
             "Plot the result one iteration before"
+            print("step_bw()")
+
             if self._current_i > 0:
                 self.current_iteration = self.iterations[self._current_i - 1]
             else:
@@ -243,6 +260,7 @@ class InteractiveViewer(object):
                 coord_button = create_toggle_buttons(
                     description='Coord:', options=['x', 'y', 'z'])
             coord_button.observe( refresh_field, 'value', 'change')
+
             # Mode and theta button (for thetaMode)
             # (First find all available cylindrical modes, across all fields)
             avail_circ_modes = []
@@ -257,6 +275,7 @@ class InteractiveViewer(object):
                     min=-math.pi / 2, max=math.pi / 2)
             set_widget_dimensions( theta_button, width=190 )
             theta_button.observe( refresh_field, 'value', 'change')
+
             # Slicing buttons
             axis_labels = self.fields_metadata[field]['axis_labels']
             if self.fields_metadata[field]['geometry'] == '3dcartesian':
@@ -265,6 +284,7 @@ class InteractiveViewer(object):
             else:
                 slice_across_button = create_toggle_buttons( value='None',
                     options=['None'] + axis_labels )
+                
             slice_across_button.observe( refresh_field, 'value', 'change' )
             slicing_button = widgets.FloatSlider( min=-1., max=1., value=0.)
             set_widget_dimensions( slicing_button, width=180 )
@@ -272,19 +292,23 @@ class InteractiveViewer(object):
 
             # Plotting options
             # ----------------
+
             # Figure number
             fld_figure_button = widgets.IntText( value=fields_figure )
             set_widget_dimensions( fld_figure_button, width=50 )
+
             # Colormap button
             fld_color_button = ColorBarSelector( refresh_field,
-                default_cmap=kw.get('cmap', 'viridis'),
+                default_cmap=kw.get('cmap', 'RdBu'),
                 default_vmin=kw.get('vmin', -5.e9),
                 default_vmax=kw.get('vmax', 5.e9) )
+            
             # Range buttons
             fld_hrange_button = RangeSelector( refresh_field,
                 default_value=10., title='Horizontal axis:')
             fld_vrange_button = RangeSelector( refresh_field,
                 default_value=10., title='Vertical axis:')
+            
             # Refresh buttons
             fld_refresh_toggle = widgets.ToggleButton(
                 description='Always refresh', value=True)
@@ -294,10 +318,12 @@ class InteractiveViewer(object):
 
             # Containers
             # ----------
+
             # Field type container
             field_widget_list = [fieldtype_button, coord_button]
             container_fields = widgets.VBox( children=field_widget_list )
             set_widget_dimensions( container_fields, width=330 )
+
             # Slicing container
             slices_widget_list = [
                 add_description("Slice normal:",
@@ -309,6 +335,7 @@ class InteractiveViewer(object):
                                 add_description('Theta:', theta_button)]
             container_slicing = widgets.VBox( children=slices_widget_list )
             set_widget_dimensions( container_slicing, width=330 )
+
             # Plotting options container
             container_fld_cbar = fld_color_button.to_container()
             container_fld_hrange = fld_hrange_button.to_container()
@@ -318,12 +345,14 @@ class InteractiveViewer(object):
                 container_fld_cbar, container_fld_vrange,
                 container_fld_hrange ])
             set_widget_dimensions( container_fld_plots, width=330 )
+
             # Accordion for the field widgets
             accord1 = widgets.Accordion( children=[container_fields,
                 container_slicing, container_fld_plots])
             accord1.set_title(0, 'Field type')
             accord1.set_title(1, 'Slice selection')
             accord1.set_title(2, 'Plotting options')
+
             # Complete field container
             container_fld = widgets.VBox( children=[accord1, widgets.HBox(
                 children=[fld_refresh_toggle, fld_refresh_button])])
@@ -339,17 +368,18 @@ class InteractiveViewer(object):
             display(container_fld)
 
         # When using %matplotlib widget, display the figures at the end
-        if 'ipympl' in matplotlib.get_backend():
+        if 'ipympl' in matplotlib.get_backend() or 'widget' in matplotlib.get_backend():
             # Disable interactive mode
             # This prevents the notebook from showing the figure
             # when calling `plt.figure` (unreliable with `%matplotlib widget`)
             # and we use `display` instead.
             plt.ioff()
-            if self.avail_fields is not None:
-                fig = plt.figure( fld_figure_button.value )
-                display(fig.canvas)
+            fig = plt.figure( fld_figure_button.value )
+            display(fig.canvas)
             # Enable interactive mode again
             plt.ion()
+        else:
+            print("not using ipympl. using backend:", matplotlib.get_backend())
 
 
 def convert_to_int(m):

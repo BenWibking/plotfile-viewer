@@ -112,7 +112,7 @@ def read_field_cartesian( filename, iteration, field, coord, axis_labels,
         axes = { i: axis_labels[i] for i in range(len(axis_labels)) }
 
         info = FieldMetaInformation( axes, F.shape,
-            dfile.cellSize(0), dfile.probLo(0),
+            dfile.cellSize(0), dfile.probLo(),
             1.0, position,
             time, iteration, component_attrs={}, field_attrs={} )
 
@@ -155,7 +155,7 @@ def get_grid_parameters( filename, iteration, avail_fields, metadata ):
     # Extract relevant quantities
     labels = ['x', 'y']
     grid_spacing = dfile.cellSize(0)
-    grid_offset = dfile.probLo(0)
+    grid_offset = dfile.probLo()
     grid_size = dfile.probDomain(0)
 
     # Build the dictionaries grid_size_dict and grid_range_dict
