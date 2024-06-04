@@ -21,68 +21,6 @@ try:
 except ImportError:
     matplotlib_installed = False
 
-# Redefine the default matplotlib formatter for ticks
-if matplotlib_installed:
-    from matplotlib.ticker import ScalarFormatter
-
-    class PowerOfThreeFormatter( ScalarFormatter ):
-        """
-        Formatter for matplotlib's axes ticks,
-        that prints numbers as e.g. 1.5e3, 3.2e6, 0.2e-9,
-        where the exponent is always a multiple of 3.
-
-        This helps a human reader to quickly identify the closest units
-        (e.g. nanometer) of the plotted quantity.
-
-        This class derives from `ScalarFormatter`, which
-        provides a nice `offset` feature.
-        """
-        @debug_view.capture(clear_output=False)
-        def __init__( self, *args, **kwargs ):
-            ScalarFormatter.__init__( self, *args, **kwargs )
-            # Do not print the order of magnitude on the side of the axis
-            self.set_scientific(False)
-            # Reduce the threshold for printing an offset on side of the axis
-            self._offset_threshold = 2
-
-        @debug_view.capture(clear_output=False)
-        def __call__(self, x, pos=None):
-            """
-            Function called for each tick of an axis (for matplotlib>=3.1)
-            Returns the string that appears in the plot.
-            """
-            return self.pprint_val( x, pos )
-
-        @debug_view.capture(clear_output=False)
-        def pprint_val( self, x, pos=None):
-            """
-            Function called for each tick of an axis (for matplotlib<3.1)
-            Returns the string that appears in the plot.
-            """
-            # Calculate the exponent (power of 3)
-            xp = (x - self.offset)
-            if xp != 0:
-                exponent = int(3 * math.floor( math.log10(abs(xp)) / 3 ))
-            else:
-                exponent = 0
-            # Show 3 digits at most after decimal point
-            mantissa = round( xp * 10**(-exponent), 3)
-            # After rounding the exponent might change (e.g. 0.999 -> 1.)
-            if mantissa != 0 and math.log10(abs(mantissa)) == 3:
-                exponent += 3
-                mantissa /= 1000
-            string = "{:.3f}".format( mantissa )
-            if '.' in string:
-                # Remove trailing zeros and ., for integer mantissa
-                string = string.rstrip('0')
-                string = string.rstrip('.')
-            if exponent != 0:
-                string += "e{:d}".format( exponent )
-            return string
-
-    tick_formatter = PowerOfThreeFormatter()
-
-
 class Plotter(object):
 
     """
