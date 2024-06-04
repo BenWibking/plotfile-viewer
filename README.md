@@ -18,8 +18,10 @@ contents of a timeseries of AMReX plotfiles (currently, 2D Cartesian plotfiles o
 * 2D Cartesian plotfiles
 
 ### Roadmap
-* 3D Cartesian plotfiles (with lazy loading of FABs)
+* 3D Cartesian plotfiles
 * Particles
+* Lazy loading of FABs (when the plotfiles are large)
+* Lazy loading of ParticleTiles
 
 ## Installation
 
