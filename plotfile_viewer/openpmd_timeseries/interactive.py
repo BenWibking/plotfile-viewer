@@ -466,12 +466,10 @@ class ColorBarSelector(object):
         self.active = create_checkbox( value=False )
         self.low_bound = widgets.FloatText( value=default_lowbound )
         self.up_bound = widgets.FloatText( value=default_upbound )
-        self.exponent = widgets.FloatText( value=default_exponent )
         self.logscale = create_checkbox( value=False )
 
         # Add the callback function
         self.active.observe( callback_function, 'value', 'change' )
-        self.exponent.observe( callback_function, 'value', 'change' )
         self.cmap.observe( callback_function, 'value', 'change' )
         self.logscale.observe( callback_function, 'value', 'change' )
 
@@ -484,7 +482,6 @@ class ColorBarSelector(object):
         set_widget_dimensions( self.active, width=20 )
         set_widget_dimensions( self.low_bound, width=60 )
         set_widget_dimensions( self.up_bound, width=60 )
-        set_widget_dimensions( self.exponent, width=45 )
         set_widget_dimensions( self.cmap, width=200 )
         set_widget_dimensions( self.logscale, width=20 )
 
@@ -494,8 +491,7 @@ class ColorBarSelector(object):
         logscale_container = widgets.HBox( children=[widgets.HTML("Log10 scale:"), self.logscale])
         range_container = widgets.HBox( children=[ self.active,
             add_description("from", self.low_bound, width=30 ),
-            add_description("to", self.up_bound, width=20 ),
-            add_description("x 10^", self.exponent, width=45 ) ] )
+            add_description("to", self.up_bound, width=20 ) ] )
         final_container = widgets.VBox(
             children=[ cmap_container, range_container, logscale_container])
         set_widget_dimensions( final_container, width=310 )
@@ -507,8 +503,7 @@ class ColorBarSelector(object):
         When the widget is not active, None is returned instead of the bounds.
         """
         if self.active.value is True:
-            return( [ self.low_bound.value * 10.**self.exponent.value,
-                      self.up_bound.value * 10.**self.exponent.value ] )
+            return( [ self.low_bound.value, self.up_bound.value ] )
         else:
             return( [ None, None ] )
 
