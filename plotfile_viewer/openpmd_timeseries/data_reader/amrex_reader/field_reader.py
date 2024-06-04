@@ -64,9 +64,10 @@ def read_field_cartesian( filename, iteration, field, coord, axis_labels,
     dfile = amr.PlotFileData(filename)
 
     # Dimensions of the grid
-    shape = dfile.probDomain(0)
-    grid_spacing = dfile.cellSize(0)
-    global_offset = dfile.probLo()
+    domain_box = dfile.probDomain(0)
+    shape = list(domain_box.size)    # [Nx, Ny, Nz] for level 0
+    grid_spacing = dfile.cellSize(0) # cell size on level 0
+    global_offset = dfile.probLo()   # physical coordinates of lower corner of domain
     position = [0, 0]
 
     # Current simulation time
