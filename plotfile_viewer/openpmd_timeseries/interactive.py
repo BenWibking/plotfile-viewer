@@ -51,6 +51,9 @@ class InteractiveViewer(object):
             raise RuntimeError("Failed to load the plotfile-viewer slider.\n"
                 "(Make sure that ipywidgets and matplotlib are installed.)")
 
+        # set flag for first plot
+        self.is_first_plot = True
+
         #only for debugging
         #display(debug_view)
 
@@ -81,6 +84,12 @@ class InteractiveViewer(object):
                     do_refresh = True
             # Do the refresh
             if do_refresh:
+                # save the old zoom for restoring later
+                old_ax = plt.gcf().gca()
+                old_x_lim = old_ax.get_xlim()
+                old_y_lim = old_ax.get_ylim()
+
+                # create new figure and clear
                 plt.figure(fld_figure_button.value, figsize=figsize)
                 plt.clf()
 
@@ -124,6 +133,18 @@ class InteractiveViewer(object):
                     theta=theta_button.value,
                     slice_across=slice_across,
                     plot_range=plot_range, **kw_fld )
+                
+                # restore the old zoom settings using the *new* figure
+                if self.is_first_plot is False:
+                    toolbar = plt.gcf().canvas.manager.toolbar
+                    toolbar.update()        # Clear the axes stack
+                    toolbar.push_current()  # save the auto-view as home
+                    ax = plt.gcf().gca()
+                    ax.set_xlim(old_x_lim)  # restore zoom
+                    ax.set_ylim(old_y_lim)
+                else:
+                    # we've made the first plot, so unset flag
+                    self.is_first_plot = False
 
         @debug_view.capture(clear_output=True)
         def refresh_field_type(change):
