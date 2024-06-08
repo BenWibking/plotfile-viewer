@@ -15,10 +15,11 @@ contents of a timeseries of AMReX plotfiles.
 
 
 ### Features
-* 2D Cartesian plotfiles
-* 3D Cartesian plotfiles
+* 2D Cartesian plotfiles (level 0 only)
+* 3D Cartesian plotfiles (level 0 only)
 
 ### Roadmap
+* Plot refined levels
 * Particles
 * Lazy loading of FABs (when the plotfiles are large)
 * Lazy loading of ParticleTiles
