@@ -92,23 +92,25 @@ def get_data(dfile, field=None, i_slice=None, pos_slice=None, output_type=None):
         bx = mfi.tilebox()
         marr = mfdata.array(mfi)
         marr_xp = marr.to_xp()
-        print(marr_xp.shape)
-        ## 2D version:
-        #i_s, j_s = tuple(bx.small_end)
-        #i_e, j_e = tuple(bx.big_end)
-        #if field is not None:
-        #    alldata[i_s : i_e + 1, j_s : j_e + 1] = marr_xp[:, :, 0, 0]
-        #else:
-        #    alldata[i_s : i_e + 1, j_s : j_e + 1, :] = marr_xp[:, :, 0, :]
-
-        ## 3D version:
-        i_s, j_s, k_s = tuple(bx.small_end)
-        i_e, j_e, k_e = tuple(bx.big_end)
-        if field is not None:
-            alldata[i_s : i_e + 1, j_s : j_e + 1, k_s : k_e + 1] = marr_xp[:, :, :, 0]
+        
+        if len(bx.small_end) == 2:
+            # 2D plotfile
+            i_s, j_s = tuple(bx.small_end)
+            i_e, j_e = tuple(bx.big_end)
+            if field is not None:
+                alldata[i_s : i_e + 1, j_s : j_e + 1] = marr_xp[:, :, 0, 0]
+            else:
+                alldata[i_s : i_e + 1, j_s : j_e + 1, :] = marr_xp[:, :, 0, :]
+        elif len(bx.small_end) == 3:
+            # 3D plotfile
+            i_s, j_s, k_s = tuple(bx.small_end)
+            i_e, j_e, k_e = tuple(bx.big_end)
+            if field is not None:
+                alldata[i_s : i_e + 1, j_s : j_e + 1, k_s : k_e + 1] = marr_xp[:, :, :, 0]
+            else:
+                alldata[i_s : i_e + 1, j_s : j_e + 1, k_s : k_e + 1, :] = marr_xp[:, :, :, :]
         else:
-            alldata[i_s : i_e + 1, j_s : j_e + 1, k_s : k_e + 1, :] = marr_xp[:, :, :, :]
-
+            raise Exception("unsupported dimension!")
 
     data = []
     if pos_slice is None:
