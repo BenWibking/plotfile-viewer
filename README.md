@@ -2,6 +2,8 @@
 
 **This package is currently a work-in-progress. Do not expect anything to work yet!!**
 
+**Depends on https://github.com/AMReX-Codes/pyamrex/pull/320.**
+
 ## Overview
 
 The proof-of-concept use case is to view a timeseries of 2D slices
