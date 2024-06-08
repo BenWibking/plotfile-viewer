@@ -7,14 +7,15 @@ Copyright 2015-2016, plotfile-viewer contributors
 Author: Remi Lehe
 License: 3-Clause-BSD-LBNL
 """
-from builtins import amrex_spacedim
-
-if amrex_spacedim == 2:
-    import amrex.space2d as amr
-elif amrex_spacedim == 3:
+import builtins
+if hasattr(builtins, 'amrex_spacedim'):
+    from builtins import amrex_spacedim
+    if amrex_spacedim == 2:
+        import amrex.space2d as amr
+    elif amrex_spacedim == 3:
+        import amrex.space3d as amr
+else: # default case
     import amrex.space3d as amr
-else:
-    raise Exception("amrex_spacedim must be 2 or 3!")
 
 import numpy as np
 from .utilities import get_data
