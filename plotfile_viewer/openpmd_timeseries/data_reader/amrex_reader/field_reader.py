@@ -8,7 +8,8 @@ Author: Remi Lehe
 License: 3-Clause-BSD-LBNL
 """
 
-import amrex.space2d as amr
+# FIXME: dimension-dependent import!!
+import amrex.space3d as amr
 
 import numpy as np
 from .utilities import get_data
@@ -154,7 +155,7 @@ def get_grid_parameters( filename, iteration, avail_fields, metadata ):
     dfile = amr.PlotFileData(filename)
 
     # Extract relevant quantities
-    labels = ['x', 'y']
+    labels = ['x', 'y', 'z']
     grid_spacing = dfile.cellSize(0)
     grid_offset = dfile.probLo()
     grid_size = dfile.probDomain(0)

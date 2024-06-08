@@ -8,7 +8,8 @@ Authors: Remi Lehe, Axel Huebl
 License: 3-Clause-BSD-LBNL
 """
 
-import amrex.space2d as amr
+# FIXME: dimension-dependent import!!
+import amrex.space3d as amr
 
 import numpy as np
 
@@ -71,7 +72,6 @@ def read_plotfile_params(filename, iteration, extract_parameters=True):
                 # unsupported geometry
                 raise Exception("unsupported coordinate system!")
             
-            metadata['axis_labels'] = [ 'x', 'y' ]
             metadata['type'] = 'scalar' # assume scalar components
             components = []
             metadata['avail_components'] = components
@@ -81,10 +81,13 @@ def read_plotfile_params(filename, iteration, extract_parameters=True):
                 dim = f.spaceDim()
                 if dim == 1:
                     metadata['geometry'] = "1dcartesian"
+                    metadata['axis_labels'] = [ 'x' ]
                 elif dim == 2:
                     metadata['geometry'] = "2dcartesian"
+                    metadata['axis_labels'] = [ 'x', 'y' ]
                 elif dim == 3:
                     metadata['geometry'] = "3dcartesian"
+                    metadata['axis_labels'] = [ 'x', 'y', 'z' ]
                 metadata['avail_circ_modes'] = []
 
             params['avail_fields'].append( field_name )
