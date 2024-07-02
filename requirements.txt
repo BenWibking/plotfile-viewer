@@ -3,4 +3,4 @@ scipy
 tqdm
 jupyter
 ipympl
-git+https://github.com/AMReX-Codes/pyamrex@a5c3d39e78f5240497ff08525e3ac7915c234ff6
+pyamrex @ git+https://github.com/AMReX-Codes/pyamrex@a5c3d39e78f5240497ff08525e3ac7915c234ff6
