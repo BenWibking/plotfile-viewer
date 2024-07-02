@@ -1,8 +1,8 @@
 # plotfile-viewer [WIP]
 
-**This package is currently a work-in-progress. Do not expect anything to work yet!!**
+**This package is currently a work-in-progress. Bugs are expected, and bug reports are welcome.**
 
-**Depends on https://github.com/AMReX-Codes/pyamrex/pull/320.**
+**Requires pyAMReX 24.07+.**
 
 ## Overview
 
@@ -30,21 +30,14 @@ contents of a timeseries of AMReX plotfiles.
 
 #### Installation with pip
 
-You can install `plotfile-viewer` using `pip`
+You can install `plotfile-viewer` using `pip`:
 ```
-git clone https://github.com/BenWibking/plotfile-viewer.git
-cd plotfile-viewer
-pip install -e .
-```
-In addition, if you wish to use the interactive GUI, please type
-```
-pip install jupyter
-pip install ipympl
+pip install git+https://github.com/BenWibking/plotfile-viewer
 ```
 
 ## Usage
 
-**This package is currently a work-in-progress. Do not expect anything to work yet!!**
+**This package is currently a work-in-progress. Bugs are expected, and bug reports are welcome.**
 
 If you wish to use the **interactive GUI**, the installation of
 `plotfile-viewer` provides a convenient executable which automatically
