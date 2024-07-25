@@ -10,9 +10,11 @@ License: 3-Clause-BSD-LBNL
 """
 import os
 import numpy as np
+import pathlib
+import glob
+import re
 
-
-def list_files(path_to_dir):
+def list_files(path_to_plotfiles):
     """
     Return a list of the AMReX plotfiles in this directory,
     and a list of the corresponding iterations
@@ -20,8 +22,10 @@ def list_files(path_to_dir):
     Parameter
     ---------
     path_to_dir : string
-        The path to the directory where the plot files are.
-
+        The path to the plotfile. Glob syntax is used to specify multiple plotfiles,
+        e.g. plt* will load all files matching the glob pattern.
+        (To correctly extract the cycle, each filename must end with "plt[0-9]*".)
+    
     Returns
     -------
     A tuple with:
@@ -33,19 +37,18 @@ def list_files(path_to_dir):
     # between iterations and files
     iteration_to_file = {}
 
-    import re
-    # Match only the directories that end with "plt[0-9]*"
-    my_regex = re.compile("plt[0-9]*$")  # regular expression corrected
+    # Match only the paths that end with "plt[0-9]*"
+    my_regex = re.compile("plt[0-9]*$")  # compile the regular expression
     
-    with os.scandir(path_to_dir) as it:
-        for entry in it:
-            if entry.is_dir() and my_regex.search(entry.name):
-                full_name = os.path.join(os.path.abspath(path_to_dir), entry.name)
-                # extract cycle count
-                match = my_regex.search(entry.name)
-                key_iteration = match[0][3:] # remove prefix "plt"
-                # Add iteration to dictionary
-                iteration_to_file[ int(key_iteration) ] = full_name
+    for path_string in glob.glob(path_to_plotfiles):
+        plotfile_path = pathlib.Path(path_string)
+        if plotfile_path.is_dir() and my_regex.search(plotfile_path.name):
+            full_name = str(plotfile_path.absolute())
+            # extract cycle count
+            match = my_regex.search(plotfile_path.name)
+            key_iteration = match[0][3:] # remove prefix "plt"
+            # Add iteration to dictionary
+            iteration_to_file[ int(key_iteration) ] = full_name
 
     # Extract iterations and sort them
     iterations = np.array( sorted( list( iteration_to_file.keys() ) ) )

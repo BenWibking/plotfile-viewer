@@ -65,8 +65,7 @@ class DataReader( object ):
         (in sorted order)
         """
         if self.backend == 'amrex':
-            iterations, iteration_to_file = \
-                amrex_reader.list_files( path_to_dir )
+            iterations, iteration_to_file = amrex_reader.list_files( path_to_dir )
             # Store dictionary of correspondence between iteration and file
             self.iteration_to_file = iteration_to_file
             if len(iterations) == 0:
