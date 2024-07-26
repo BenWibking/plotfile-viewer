@@ -59,7 +59,7 @@ class InteractiveViewer(object):
 
         # -----------------------
         # Define useful functions
-        @debug_view.capture(clear_output=True)
+        @debug_view.capture(clear_output=False)
         def refresh_field(change=None, force=False):
             """
             Refresh the current field figure
@@ -233,6 +233,36 @@ class InteractiveViewer(object):
                 self.current_iteration = self.iterations[self._current_i]
             slider.value = self.current_iteration
 
+        @debug_view.capture(clear_output=False)
+        def save_frames(change=None, force=False):
+            """
+            Save animation frames as PNG images.
+            Iterate through all iterations, save each as PNG.
+
+            Parameters :
+            ------------
+            change: dictionary
+                Dictionary passed by the widget to a callback functions
+                whenever a change of a widget happens
+                (see docstring of ipywidgets.Widget.observe)
+                This is mainline a place holder ; not used in this function
+
+            force: bool
+                Whether to force the update
+            """
+            print("starting animation render for", len(self.iterations), "frames")
+            for i in range(len(self.iterations)):
+                # set current iteration
+                self.current_iteration = self.iterations[i]
+                slider.value = self.current_iteration
+                # render
+                refresh_field()
+                # save as PNG
+                print("saving frame", i)
+                # TODO: get filename prefix from string widget
+                plt.savefig(f"frame_{i:05d}.png")
+
+
         # ---------------
         # Define widgets
         # ---------------
@@ -343,6 +373,12 @@ class InteractiveViewer(object):
                 description='Refresh now!')
             fld_refresh_button.on_click( partial(refresh_field, force=True) )
 
+            # Animation buttons
+            # -----------------
+            anim_output_name = widgets.Text(value='frame_', disabled=False)
+            save_frames_button = widgets.Button(description='Save frames as PNG')
+            save_frames_button.on_click( partial(save_frames, force=True) )
+
             # Containers
             # ----------
 
@@ -373,12 +409,20 @@ class InteractiveViewer(object):
                 container_fld_hrange ])
             set_widget_dimensions( container_fld_plots, width=330 )
 
+            # Animation options container
+            anim_widget_list = [
+                add_description("Filename prefix:", anim_output_name, width=200),
+                save_frames_button]
+            container_animation = widgets.VBox( children=anim_widget_list )
+            set_widget_dimensions( container_animation, width=330 )
+
             # Accordion for the field widgets
             accord1 = widgets.Accordion( children=[container_fields,
-                container_slicing, container_fld_plots])
+                container_slicing, container_fld_plots, container_animation])
             accord1.set_title(0, 'Field type')
             accord1.set_title(1, 'Slice selection')
             accord1.set_title(2, 'Plotting options')
+            accord1.set_title(3, 'Animation options')
 
             # Complete field container
             container_fld = widgets.VBox( children=[accord1, widgets.HBox(
