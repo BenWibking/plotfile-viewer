@@ -9,7 +9,6 @@ Author: Remi Lehe
 License: 3-Clause-BSD-LBNL
 """
 import numpy as np
-import math
 
 from .interactive import debug_view
 

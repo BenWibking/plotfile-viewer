@@ -17,7 +17,6 @@ if hasattr(builtins, 'amrex_spacedim'):
 else: # default case
     import amrex.space3d as amr
 
-import numpy as np
 from .utilities import get_data
 from plotfile_viewer.openpmd_timeseries.field_metainfo import FieldMetaInformation
 

@@ -8,7 +8,6 @@ Copyright 2015-2016, plotfile-viewer contributors
 Authors: Remi Lehe, Axel Huebl
 License: 3-Clause-BSD-LBNL
 """
-import os
 import numpy as np
 import pathlib
 import glob

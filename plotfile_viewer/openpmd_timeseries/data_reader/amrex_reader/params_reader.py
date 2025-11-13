@@ -17,9 +17,6 @@ if hasattr(builtins, 'amrex_spacedim'):
 else: # default case
     import amrex.space3d as amr
 
-import numpy as np
-
-
 def read_plotfile_params(filename, iteration, extract_parameters=True):
     """
     Extract the time and some plotfile parameters from a file
@@ -110,4 +107,3 @@ def read_plotfile_params(filename, iteration, extract_parameters=True):
 
     # Close the file and return the parameters
     return(t, params)
-

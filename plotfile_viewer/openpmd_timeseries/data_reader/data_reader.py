@@ -8,10 +8,6 @@ Copyright 2020, plotfile-viewer contributors
 Authors: Remi Lehe
 License: 3-Clause-BSD-LBNL
 """
-import numpy as np
-import os
-import re
-
 available_backends = []
 
 try:
