@@ -10,17 +10,40 @@ License: 3-Clause-BSD-LBNL
 """
 import math
 from functools import partial
+from pathlib import Path
+import numpy as np
+
+ipywidgets_version = 0
+dependencies_installed = False
+
 try:
-    from ipywidgets import widgets, __version__
+    from ipywidgets import widgets, __version__  # type: ignore
     ipywidgets_version = int(__version__[0])
-    from IPython.core.display import display, clear_output
+    try:
+        from IPython.display import display, clear_output  # IPython 7+
+    except ImportError:  # pragma: no cover - legacy fallback
+        from IPython.core.display import display, clear_output
     import matplotlib
     import matplotlib.pyplot as plt
-    dependencies_installed = True
 except ImportError:
-    dependencies_installed = False
+    widgets = None  # type: ignore
+else:
+    dependencies_installed = True
 
-debug_view = widgets.Output(layout={'border': '1px solid black'})
+
+class _NoOpDebugView:
+    """Fallback so decorators remain defined when widgets are missing."""
+
+    def capture(self, clear_output=False):
+        def decorator(func):
+            return func
+        return decorator
+
+
+if dependencies_installed:
+    debug_view = widgets.Output(layout={'border': '1px solid black'})
+else:
+    debug_view = _NoOpDebugView()
 
 class InteractiveViewer(object):
 
@@ -50,6 +73,50 @@ class InteractiveViewer(object):
         if not dependencies_installed:
             raise RuntimeError("Failed to load the plotfile-viewer slider.\n"
                 "(Make sure that ipywidgets and matplotlib are installed.)")
+
+        # Retrieve iterations lazily so subclasses without explicit attribute
+        # (e.g., after deserialization) still work.
+        iterations = getattr(self, "iterations", None)
+        if iterations is None:
+            plotter = getattr(self, "plotter", None)
+            iterations = getattr(plotter, "iterations", None) if plotter else None
+            if iterations is not None:
+                self.iterations = iterations
+        if iterations is None or len(iterations) == 0:
+            missing_sample = {}
+            data_reader = getattr(self, "data_reader", None)
+            if data_reader is not None:
+                missing_sample = getattr(data_reader, "iteration_to_file", {})
+            sample_hint = ""
+            if isinstance(missing_sample, dict) and missing_sample:
+                sample_hint = f" (checked: {next(iter(missing_sample.values()))})"
+            raise RuntimeError(
+                "Interactive slider requires plotfile iterations but none were "
+                f"found on disk{sample_hint}. Verify the file path and rerun "
+                "OpenPMDTimeSeries before calling slider()."
+            )
+        self.iterations = np.asarray(self.iterations)
+
+        missing_files = []
+        data_reader = getattr(self, "data_reader", None)
+        if data_reader is not None:
+            mapping = getattr(data_reader, "iteration_to_file", None)
+            if isinstance(mapping, dict):
+                for iteration in self.iterations:
+                    file_path = mapping.get(int(iteration))
+                    if file_path and not Path(file_path).exists():
+                        missing_files.append(file_path)
+                    if len(missing_files) >= 3:
+                        break
+        if missing_files:
+            sample_list = ", ".join(missing_files[:3])
+            if len(missing_files) > 3:
+                sample_list += ", ..."
+            raise RuntimeError(
+                "Cannot start interactive slider because the referenced plotfile "
+                f"directories are missing: {sample_list}. "
+                "Re-run OpenPMDTimeSeries with paths that exist on disk."
+            )
 
         # set flag for first plot
         self.is_first_plot = True

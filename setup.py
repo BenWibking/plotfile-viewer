@@ -1,17 +1,30 @@
 import sys
+from pathlib import Path
+
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
+try:  # Python 3.11+
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - fallback for older Pythons
+    import tomli as tomllib
+
 # Get the long description
-with open('./README.md') as f:
+ROOT = Path(__file__).parent
+with open(ROOT / 'README.md') as f:
     long_description = f.read()
-# Get the package requirements from the requirements.txt file
-with open('./requirements.txt') as f:
-    install_requires = [line.strip('\n') for line in f.readlines()]
+
+
+def load_dependencies():
+    """Read the canonical dependency list from pyproject.toml."""
+    with open(ROOT / 'pyproject.toml', 'rb') as pyproject_file:
+        pyproject = tomllib.load(pyproject_file)
+    return pyproject['project']['dependencies']
+
 
 # Read the version number, by executing the file plotfile_viewer/__version__.py
 # This defines the variable __version__
-with open('./plotfile_viewer/__version__.py') as f:
+with open(ROOT / 'plotfile_viewer/__version__.py') as f:
     exec( f.read() )
 
 # Define a custom class to run the py.test with `python setup.py test`
@@ -36,7 +49,7 @@ setup(name='plotfile-viewer',
       package_data={'plotfile_viewer': ['notebook_starter/*.ipynb']},
       scripts=['plotfile_viewer/notebook_starter/plotfile_notebook'],
       tests_require=['pytest', 'jupyter'],
-      install_requires=install_requires,
+      install_requires=load_dependencies(),
       extras_require = {
         'all': ["ipympl", "ipywidgets", "matplotlib", "numba", "pyamrex", "wget"],
         'GUI':  ["ipywidgets", "ipympl", "matplotlib"],
