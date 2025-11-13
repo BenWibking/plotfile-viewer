@@ -19,10 +19,6 @@ jobs:
       shell: pwsh
       run: pixi install
 
-    - name: Editable install
-      shell: pwsh
-      run: pixi run python -m pip install -e .
-
     - name: pyflakes
       shell: pwsh
       run: pixi run python -m pyflakes plotfile_viewer
