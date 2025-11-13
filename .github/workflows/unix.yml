@@ -6,44 +6,29 @@ jobs:
   test:
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
-        os: [ubuntu-20.04]
-        include:
-          - python-version: 3.9
-            os: macos-latest
+        os: [ubuntu-20.04, macos-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v3
-    - name: Cache conda
-      uses: actions/cache@v3
-      # Increase this value to reset cache
-      env: {CACHE_NUMBER: 0}
-      with:
-        path: ~/conda_pkgs_dir
-        key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{ matrix.python-version }}
-
-    - uses: conda-incubator/setup-miniconda@v2
-      name: Setup conda
-      with:
-        auto-update-conda: true
-        activate-environment: testing
-        auto-activate-base: false
-        channels: conda-forge,defaults
-        channel-priority: true
+    - name: Install Pixi
+      shell: bash
+      run: |
+        curl -fsSL https://pixi.sh/install.sh | bash
+        echo "$HOME/.pixi/bin" >> $GITHUB_PATH
 
     - shell: bash -eo pipefail -l {0}
       name: Install dependencies
-      run: |
-        if [ "${{ matrix.python-version }}" != "3.8" ]; then
-          conda install --yes cython numpy scipy h5py openpmd-api matplotlib jupyter pytest pyflakes python=${{ matrix.python-version }} python-wget
-        else
-          conda install --yes cython numpy scipy h5py matplotlib jupyter pytest pyflakes python=${{ matrix.python-version }} python-wget
-        fi
+      run: pixi install
 
-    - shell: bash -eo pipefail  -l {0}
+    - shell: bash -eo pipefail -l {0}
+      name: Editable install
+      run: pixi run python -m pip install -e .
+
+    - shell: bash -eo pipefail -l {0}
       name: pyflakes
-      run: python -m pyflakes plotfile_viewer
+      run: pixi run python -m pyflakes plotfile_viewer
+
     - shell: bash -eo pipefail -l {0}
       name: Test
-      run: python setup.py test
+      run: pixi run python -m pytest tests

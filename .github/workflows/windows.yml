@@ -5,16 +5,28 @@ on: [push, pull_request]
 jobs:
   win_pip:
     name: Windows
-    strategy:
-      matrix:
-        python-version: [3.10]
-        os: [windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v3
-    - name: Install dependencies
+    - name: Install Pixi
+      shell: pwsh
       run: |
-        python -m pip install cython numpy scipy h5py openpmd-api matplotlib jupyter pytest pyflakes wget
+        iwr https://pixi.sh/install.ps1 -UseBasicParsing | iex
+        "$env:USERPROFILE\.pixi\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - name: Install dependencies
+      shell: pwsh
+      run: pixi install
+
+    - name: Editable install
+      shell: pwsh
+      run: pixi run python -m pip install -e .
+
+    - name: pyflakes
+      shell: pwsh
+      run: pixi run python -m pyflakes plotfile_viewer
+
     - name: Test
-      run: python setup.py test
+      shell: pwsh
+      run: pixi run python -m pytest tests
