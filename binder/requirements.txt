@@ -1,4 +1,0 @@
-# full dependencies for the tutorials, e.g. when run on binder
-plotfile-viewer
-matplotlib
-wget

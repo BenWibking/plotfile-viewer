@@ -1,6 +1,0 @@
-numpy~=1.15
-scipy
-tqdm
-jupyter
-ipympl
-amrex @ git+https://github.com/AMReX-Codes/pyamrex@24.07

@@ -8,3 +8,6 @@ plotfile_viewer.egg-info/
 .eggs/
 .vs/
 __pycache__
+# pixi environments
+.pixi/*
+!.pixi/config.toml

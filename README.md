@@ -28,11 +28,16 @@ contents of a timeseries of AMReX plotfiles.
 
 ## Installation
 
-#### Installation with pip
+This project now relies on [Pixi](https://pixi.sh) for dependency and environment management.
 
-You can install `plotfile-viewer` using `pip`:
 ```
-pip install git+https://github.com/BenWibking/plotfile-viewer
+pixi install
+```
+
+After the initial install you can enter a Pixi shell or prefix commands with `pixi run`, e.g.:
+
+```
+pixi run plotfile_notebook
 ```
 
 ## Usage
